@@ -9,7 +9,7 @@ environment:
   - platform: x86
     AFLAGS: "/D__i386__"
   - platform: x64
-    AFLAGS: "/D__x86_64__  /DPD_LONGINTTYPE=\\\"long long\\\""
+    AFLAGS: "/D__x86_64__"
 
 matrix:
   allow_failures:
