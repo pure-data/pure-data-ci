@@ -10,6 +10,10 @@ environment:
     AFLAGS: "/D__i386__"
   - platform: x64
     AFLAGS: "/D__x86_64__"
+  - platform: mingw-w64-i686
+    cc_path: "C:\msys64\usr\bin"
+  - platform: mingw-w64-x86_64
+    cc_path: "C:\msys64\usr\bin"
 
 matrix:
   allow_failures:
@@ -17,9 +21,16 @@ matrix:
 
 shallow_clone: true
 
-install:
+init:
   - echo init
-  - mkdir bin
+  - if not "%cc_path%"=="" (set "PATH=%PATH%;%cc_path%")
+  - if "%platform:~0,1%"=="x" call "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" %platform%
+  - if "%platform:~0,1%"=="x" call "%ProgramFiles%\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%platform%
+  - if "%platform:~0,5%"=="mingw" pacman --noconfirm -S --needed %platform%-gcc %platform%-libtool autoconf automake make %platform%-pkg-config %platform%-ntldd
+
+install:
+  - echo install
+  - mkdir -p bin
 
 # the version included with the Pd binaries,
 # is actually ftp://sourceware.org/pub/pthreads-win32/pthreads-dll-2002-03-02
@@ -39,13 +50,16 @@ install:
 
 build_script:
   - echo build_script
-  - call "%ProgramFiles%\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%platform%
-  - call "%VS120COMNTOOLS%\..\..\VC\vcvarsall.bat" %platform%
-  - cd src
-  - nmake /f makefile.msvc AFLAGS="%AFLAGS%"
+  - if "%platform:~0,1%"=="x" cd src
+  - if "%platform:~0,1%"=="x" nmake /f makefile.msvc AFLAGS="%AFLAGS%"
+  - cd "%APPVEYOR_BUILD_FOLDER%"
+  - if "%platform:~0,5%"=="MinGW" ./autogen.sh
+  - if "%platform:~0,5%"=="MinGW" ./configure
+  - if "%platform:~0,5%"=="MinGW" make
+  - if "%platform:~0,5%"=="MinGW" make app
 
 test_script:
-  - ..\bin\pd.com -version
+  - bin\pd.com -version
 
 deploy: off
 
