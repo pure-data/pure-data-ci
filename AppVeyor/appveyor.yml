@@ -23,7 +23,7 @@ install:
 
 # the version included with the Pd binaries,
 # is actually ftp://sourceware.org/pub/pthreads-win32/pthreads-dll-2002-03-02
-  - curl ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip -o pthreads.zip
+  - curl -L ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip -o pthreads.zip
   - 7z x -opthreads pthreads.zip  Pre-built.2/dll Pre-built.2/lib Pre-built.2/include
   - set pthreaddir="%APPVEYOR_BUILD_FOLDER%\\pthreads\\Pre-built.2"
   - cd "%pthreaddir%\\include" && copy "*.h" "%APPVEYOR_BUILD_FOLDER%\\src\\"
