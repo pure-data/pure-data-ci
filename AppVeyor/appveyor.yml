@@ -31,6 +31,12 @@ install:
   - cd "%pthreaddir%\\lib\\%platform%" && copy "pthreadVC2.lib" "%APPVEYOR_BUILD_FOLDER%\\bin\\pthreadVC.lib"
   - cd "%APPVEYOR_BUILD_FOLDER%"
 
+# asio
+  - curl -L http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip -o asiosdk2.3.zip
+  - 7z x -oasio asiosdk2.3.zip
+  - cd asio && REN ASIOSDK2.3 ASIOSDK
+  - cd "%APPVEYOR_BUILD_FOLDER%"
+
 build_script:
   - echo build_script
   - call "%ProgramFiles%\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /%platform%
