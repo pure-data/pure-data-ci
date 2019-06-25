@@ -11,9 +11,9 @@ environment:
   - platform: x64
     AFLAGS: "/D__x86_64__"
   - platform: mingw-w64-i686
-    cc_path: "C:\msys64\usr\bin"
+    cc_path: "C:\\msys64\\usr\\bin"
   - platform: mingw-w64-x86_64
-    cc_path: "C:\msys64\usr\bin"
+    cc_path: "C:\\msys64\\usr\\bin"
 
 matrix:
   allow_failures:
