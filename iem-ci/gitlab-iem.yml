@@ -48,7 +48,7 @@
   variables:
     IEMCI_CONFIGURATIONS: mingw32 python2
   before_script:
-    - echo "CI_CONFIG_PATH: ${CI_CONFIG_PATH}"
+    - echo "CI_CONFIG_PATH=${CI_CONFIG_PATH}"
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip
     - unzip -q asiosdk2.3.zip -d asio
