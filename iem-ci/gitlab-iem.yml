@@ -1,5 +1,11 @@
 # CI-configuration for building Pd on various platforms, using IEM's GitLab CI
 
+
+# hack! CI_CONFIG_PATH is unset when we use a remote...
+variables:
+  IEMCI_CONFIG_PATH: https://raw.githubusercontent.com/pure-data/pure-data-ci/master/iem-ci/gitlab-iem.yml
+
+
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
 .build:snapshot: &snapshot
@@ -48,7 +54,7 @@
   variables:
     IEMCI_CONFIGURATIONS: mingw32 python2
   before_script:
-    - echo "CI_CONFIG_PATH=${CI_CONFIG_PATH}"
+    - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip
     - unzip -q asiosdk2.3.zip -d asio
@@ -60,7 +66,7 @@
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
     - rm -f Pd-*.*/bin/libwinpthread-1.dll Pd-*.*/bin/msvc*.dll
-    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.win.sh {} + || true
+    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 .build:w64: &build_w64
   stage: build
@@ -69,6 +75,7 @@
   variables:
     IEMCI_CONFIGURATIONS: mingw64 python2
   before_script:
+    - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip
     - unzip -q asiosdk2.3.zip -d asio
@@ -80,7 +87,7 @@
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
     - rm -f Pd-*.*/bin/libwinpthread-1.dll Pd-*.*/bin/msvc*.dll
-    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.win.sh {} + || true
+    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
