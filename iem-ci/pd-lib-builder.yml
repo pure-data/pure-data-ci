@@ -1,0 +1,5 @@
+## recipe for building pd-lib-builder based projects on
+## the gitlab-based iem-ci
+---
+include:
+  - https://git.iem.at/pd/iem-ci/raw/master/pd-lib-builder/gitlab-iem.yml
