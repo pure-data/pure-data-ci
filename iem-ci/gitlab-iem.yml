@@ -4,6 +4,7 @@
 # hack! CI_CONFIG_PATH is unset when we use a remote...
 variables:
   IEMCI_CONFIG_PATH: https://raw.githubusercontent.com/pure-data/pure-data-ci/master/iem-ci/gitlab-iem.yml
+  PD_FLOATSIZE: 32
 
 
 ###################################################
@@ -33,7 +34,7 @@ variables:
   script:
     - ./autogen.sh
     - VERSION=$(egrep "^PACKAGE_VERSION=" configure | sed -e 's|^PACKAGE_VERSION=||' -e "s|'||g")
-    - ./configure --prefix="/Pd-${VERSION}" --enable-alsa --enable-jack
+    - ./configure --prefix="/Pd-${VERSION}" --enable-alsa --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make install DESTDIR=$(pwd)/
 
@@ -43,7 +44,7 @@ variables:
   stage: build
   script:
     - ./autogen.sh
-    - ./configure
+    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make app
 
@@ -61,7 +62,7 @@ variables:
     - mv asio/ASIOSDK2.3 asio/ASIOSDK
   script:
     - ./autogen.sh
-    - ./configure
+    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
@@ -82,7 +83,7 @@ variables:
     - mv asio/ASIOSDK2.3 asio/ASIOSDK
   script:
     - ./autogen.sh
-    - ./configure CPPFLAGS="-DPD_LONGINTTYPE=__int64"
+    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
