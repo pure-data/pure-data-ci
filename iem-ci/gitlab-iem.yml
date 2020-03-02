@@ -98,10 +98,10 @@ Linux:
 Darwin:
   <<: *build_macos
   <<: *release
-W32:
+w32:
   <<: *build_w32
   <<: *release
-W64:
+w64:
   <<: *build_w64
   <<: *release
 
