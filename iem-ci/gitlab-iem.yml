@@ -120,6 +120,40 @@ w64_snapshot:
   <<: *build_w64
   <<: *snapshot
 
+Linux_double_snapshot:
+  extends: Linux_snapshot
+  variables:
+    PD_FLOATSIZE: 64
+Darwin_double_snapshot:
+  extends: Darwin_snapshot
+  variables:
+    PD_FLOATSIZE: 64
+w32_double_snapshot:
+  extends: w32_snapshot
+  variables:
+    PD_FLOATSIZE: 64
+w64_double_snapshot:
+  extends: w64_snapshot
+  variables:
+    PD_FLOATSIZE: 64
+
+Linux_double:
+  extends: Linux
+  variables:
+    PD_FLOATSIZE: 64
+Darwin_double:
+  extends: Darwin
+  variables:
+    PD_FLOATSIZE: 64
+w32_double:
+  extends: w32
+  variables:
+    PD_FLOATSIZE: 64
+w64_double:
+  extends: w64
+  variables:
+    PD_FLOATSIZE: 64
+
 
 deken:
   stage: deploy
