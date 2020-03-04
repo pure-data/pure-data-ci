@@ -51,7 +51,7 @@ linux: &build_linux
     - if [ -e .git-ci/requirements.apt ]; then apt-get install -y --no-install-recommends $(cat .git-ci/requirements.apt | sed -e '/^#/d'); fi
     - export PD=/usr/bin/pd
 
-.build:macos: &build_macos
+macos: &build_macos
   extends: .build:script
   tags:
      - osx
@@ -62,7 +62,7 @@ linux: &build_linux
     - rm -f Pd.tgz
     - export PD=$(find /Applications/Pd*.app/Contents/Resources/bin/ type f -name pd -print -quit)
 
-.build:w32: &build_w32
+w32: &build_w32
   extends: .build:script
   tags:
     - windows
@@ -76,7 +76,7 @@ linux: &build_linux
     - rm -f Pd.zip
     - export PD="${PROGRAMFILESX86}/pd/bin/pd.com"
 
-.build:w64: &build_w64
+w64: &build_w64
   extends: .build:script
   tags:
     - windows
