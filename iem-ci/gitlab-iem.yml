@@ -148,10 +148,13 @@ Linux_make:
   extends: .build:linuxmake
 Darwin_make:
   extends: .build:macosmake
+  allow_failure: true
 w32_make:
   extends: .build:w32make
+  allow_failure: true
 w64_make:
   extends: .build:w64make
+  allow_failure: true
 
 Linux_double_snapshot:
   extends: Linux_snapshot
