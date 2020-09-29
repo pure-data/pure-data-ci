@@ -113,6 +113,7 @@ variables:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+    - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 .build:w64make:
   extends: .build:w64
@@ -121,6 +122,7 @@ variables:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+    - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
