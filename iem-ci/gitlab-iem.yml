@@ -95,24 +95,28 @@ variables:
   script:
     - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
 
 .build:macosmake:
   extends: .build:macos
   script:
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
 
 .build:w32make:
   extends: .build:w32
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
 
 .build:w64make:
   extends: .build:w64
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
