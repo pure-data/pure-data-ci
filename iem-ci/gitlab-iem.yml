@@ -134,14 +134,14 @@ variables:
 
 .script:codesign:macos: &script_codesign_macos
   - APP=${APP:-$(ls -d Pd*.app | tail)}
+  - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
   - codesignflags="${codesignflags} --sign ${sign_id}"
+  - echo "codesignflags ${codesignflags}"
   - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tcl.framework/Versions/Current
   - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tk.framework/Versions/Current
-  - find ${APP}/Contents/Resources/bin -type f                                        -exec \
-        codesign ${codesignflags} --strict --options runtime {} ";"
-  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" ")" -exec \
-        codesign ${codesignflags} --strict {} ";"
+  - find ${APP}/Contents/Resources/bin -type f                                        -exec codesign ${codesignflags} --strict --options runtime {} ";"
+  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" ")" -exec codesign ${codesignflags} --strict {} ";"
   - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
 
 .script:notarize:macos: &script_notarize_macos
