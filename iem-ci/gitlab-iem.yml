@@ -147,6 +147,7 @@ variables:
 .script:notarize:macos: &script_notarize_macos
   # setup some vars
   - APP=${APP:-$(ls -d Pd*.app | tail)}
+  - APP=${APP%/}
   - PKG=${PKG:-${APP%.app}.dmg}
   - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
   # try to switch to the latest and greatest XCode, so we get 'altool'
@@ -190,6 +191,10 @@ variables:
   - *script_notarize_macos
   - *script_notarizewait_macos
   - xcrun stapler staple ${APP} || true
+  - rm -f "${APP%.app}.dmg"
+  - mkdir -p "${APP}/Contents/_CodeSignature/"
+  - cp notari* "${APP}/Contents/_CodeSignature/"
+  - hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
@@ -254,7 +259,7 @@ w64_double:
   variables:
     PD_FLOATSIZE: 64
 
-
+## packages
 deken:
   stage: deploy
   image: debian:buster
@@ -270,3 +275,14 @@ deken:
     - deken package --version="${CI_COMMIT_TAG#v}" "tmp/${CI_PROJECT_NAME}"
     - deken package --version="${CI_COMMIT_TAG#v}" "${CI_PROJECT_NAME}"
     - test -z "${DEKEN_USERNAME}" || test -z "${DEKEN_PASSWORD}" || deken upload --no-source-error ./*.dek
+
+macOS:
+  allow_failure: true
+  stage: deploy
+  extends:
+    - .base
+    - .notarize:macos
+  dependencies:
+    - Darwin
+  needs:
+    - Darwin
