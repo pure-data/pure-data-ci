@@ -124,6 +124,83 @@ variables:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
     - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
+.script:keychain:macos: &script_keychain_macos
+  # get certificate chain
+  - curl https://developer.apple.com/certificationauthority/AppleWWDRCA.cer >/tmp/AppleWWDRCA.cer
+  - curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer       >/tmp/AppleWWDRCAG3.cer
+  - if test -e "${MACOS_CERTIFICATE_PFX}" && test -n "${MACOS_CERTIFICATE_PWD}"; then cat "${MACOS_CERTIFICATE_PFX}" | base64 -D >/tmp/sign.pfx; fi
+  - test -e /tmp/sign.pfx || exit 77
+  - shasum /tmp/sign.pfx
+  - keychainpass=${keychainpass:-${CI_BUILD_TOKEN:-secret$(date +%s)}}
+  - security create-keychain -p "${keychainpass}" build.keychain
+  - security default-keychain -s build.keychain
+  - security unlock-keychain -p "${keychainpass}" build.keychain
+  - security import /tmp/AppleWWDRCA.cer   -k build.keychain
+  - security import /tmp/AppleWWDRCAG3.cer -k build.keychain
+  - security import /tmp/sign.pfx -k build.keychain -P "${MACOS_CERTIFICATE_PWD}" -T /usr/bin/codesign
+  - security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k "${keychainpass}" build.keychain >/dev/null
+  - security find-identity -v
+  - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
+
+.script:codesign:macos: &script_codesign_macos
+  - APP=${APP:-$(ls -d Pd*.app | tail)}
+  - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
+  - codesignflags="${codesignflags} --sign ${sign_id}"
+  - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tcl.framework/Versions/Current
+  - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tk.framework/Versions/Current
+  - find ${APP}/Contents/Resources/bin -type f                                        -exec \
+        codesign ${codesignflags} --strict --options runtime {} ";"
+  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" ")" -exec \
+        codesign ${codesignflags} --strict {} ";"
+  - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
+
+.script:notarize:macos: &script_notarize_macos
+  # setup some vars
+  - APP=${APP:-$(ls -d Pd*.app | tail)}
+  - PKG=${PKG:-${APP%.app}.dmg}
+  - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
+  # try to switch to the latest and greatest XCode, so we get 'altool'
+  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
+  # check if altool exists
+  - xcrun --find altool
+  # stuff everything into a disk image
+  - test "${PKG}" = "${PKG%.dmg}" || hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}"
+  # or a ZIP-file , if you really want
+  - test "${PKG}" = "${PKG%.zip}" || zip -r -y "${PKG}" "${IEM_CI_PKGLIBDIR:-${IEM_CI_PROJECT_NAME}}"
+  # and upload to apple...
+  - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || (xcrun altool --notarize-app --primary-bundle-id "${BUNDLE_ID}" --username "${APPLE_ID}" --password "${APPLE_PWD}" --file "${PKG}" --verbose --output-format xml > notarize.plist && defaults read $(pwd)/notarize.plist notarization-upload)
+  # read back the UUID of the notarization request
+  - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || notarize_uuid=$(defaults read $(pwd)/notarize.plist notarization-upload | grep RequestUUID | sed -e 's|.*"\(.*\)";|\1|')
+
+.script:notarizewait:macos: &script_notarizewait_macos
+  # setup some vars
+  - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
+  - end=0
+  - logfile=""
+  - test -z "${notarize_uuid}" test 0 -le ${NOTARIZE_TIMEOUT} || end=$(($(date +%s) + ${NOTARIZE_TIMEOUT}))
+  # wait until either
+  # - the current date exceeds the timeout
+  # - the Status is no longer 'in progress'
+  - |
+    while [ ${end} -gt $(date +%s) ]; do
+      xcrun altool -u "${APPLE_ID}" -p "${APPLE_PWD}" --output-format xml --notarization-info "${notarize_uuid}" > notarization-info.plist;
+      defaults read $(pwd)/notarization-info.plist notarization-info | tee /dev/stderr | egrep "Status.*in progress" >/dev/null && continue || break;
+    done
+  # check whether there's a logfile to report
+  - test ! -e notarization-info.plist || logfile=$(defaults read $(pwd)/notarization-info.plist notarization-info | egrep '^ *LogFileURL *=' | sed -e 's|.*"\(.*\)";|\1|')
+  - test -z "${logfile}" || curl "${logfile}" | tee notarization.log.json
+
+.notarize:macos:
+  tags:
+     - osx
+  stage: deploy
+  script:
+  - *script_keychain_macos
+  - *script_codesign_macos
+  - *script_notarize_macos
+  - *script_notarizewait_macos
+  - xcrun stapler staple ${APP} || true
+
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
 
