@@ -168,7 +168,7 @@ variables:
   - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
   - end=0
   - logfile=""
-  - test -z "${notarize_uuid}" test 0 -le ${NOTARIZE_TIMEOUT} || end=$(($(date +%s) + ${NOTARIZE_TIMEOUT}))
+  - test -z "${notarize_uuid}" || test 0 -ge ${NOTARIZE_TIMEOUT} || end=$(($(date +%s) + ${NOTARIZE_TIMEOUT}))
   # wait until either
   # - the current date exceeds the timeout
   # - the Status is no longer 'in progress'
@@ -191,10 +191,10 @@ variables:
   - *script_notarize_macos
   - *script_notarizewait_macos
   - xcrun stapler staple ${APP} || true
-  - rm -f "${APP%.app}.dmg"
+  - rm -f "${PKG}"
   - mkdir -p "${APP}/Contents/_CodeSignature/"
   - cp notari* "${APP}/Contents/_CodeSignature/"
-  - hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
+  #- hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
