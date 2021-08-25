@@ -49,7 +49,7 @@ variables:
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
     - unzip -q asiosdk.zip -d asio
-    - mv asio/* asio/ASIOSDK
+    - for f in asio/*; do mv "${f}" asio/ASIOSDK; done || true
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
@@ -70,7 +70,7 @@ variables:
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
     - unzip -q asiosdk.zip -d asio
-    - mv asio/* asio/ASIOSDK
+    - for f in asio/*; do mv "${f}" asio/ASIOSDK; done || true
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
