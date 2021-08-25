@@ -38,28 +38,7 @@ variables:
     - make
     - make app
 
-.build:w32: &build_w32
-  stage: build
-  tags:
-    - windows
-  variables:
-    IEMCI_CONFIGURATIONS: mingw32 python2
-  before_script:
-    - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
-    - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
-    - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
-    - unzip -q asiosdk.zip -d asio
-    - for f in asio/*/; do mv "${f}" asio/ASIOSDK; done || true
-  script:
-    - ./autogen.sh
-    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
-    - make
-    - make app
-    - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
-    - rm -f Pd-*.*/bin/libwinpthread-1.dll Pd-*.*/bin/msvc*.dll
-    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
-
-.build:w64: &build_w64
+.build:win:
   stage: build
   tags:
     - windows
@@ -79,6 +58,16 @@ variables:
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
     - rm -f Pd-*.*/bin/libwinpthread-1.dll Pd-*.*/bin/msvc*.dll
     - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
+
+.build:w32: &build_w32
+  extends: .build:win
+  variables:
+    IEMCI_CONFIGURATIONS: mingw32 python2
+
+.build:w64: &build_w64
+  extends: .build:win
+  variables:
+    IEMCI_CONFIGURATIONS: mingw64 python2
 
 .build:linuxmake:
   extends: .build:linux
