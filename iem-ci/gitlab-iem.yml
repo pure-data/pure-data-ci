@@ -47,9 +47,9 @@ variables:
   before_script:
     - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
-    - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
+    - wget -O asiosdk.zip https://www.steinberg.net/asiosdk
     - unzip -q asiosdk.zip -d asio
-    - for f in asio/*/; do mv "${f}" asio/ASIOSDK; done || true
+    - for f in asio/*/; do echo "${f}"; mv "${f}" asio/ASIOSDK; done || true
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
