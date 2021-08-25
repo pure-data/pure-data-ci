@@ -47,9 +47,9 @@ variables:
   before_script:
     - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
-    - wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip
-    - unzip -q asiosdk2.3.zip -d asio
-    - mv asio/ASIOSDK2.3 asio/ASIOSDK
+    - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
+    - unzip -q asiosdk.zip -d asio
+    - mv asio/* asio/ASIOSDK
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
@@ -68,9 +68,9 @@ variables:
   before_script:
     - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
-    - wget http://www.steinberg.net/sdk_downloads/asiosdk2.3.zip
-    - unzip -q asiosdk2.3.zip -d asio
-    - mv asio/ASIOSDK2.3 asio/ASIOSDK
+    - curl -L https://www.steinberg.net/asiosdk > asiosdk.zip
+    - unzip -q asiosdk.zip -d asio
+    - mv asio/* asio/ASIOSDK
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
