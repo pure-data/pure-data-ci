@@ -32,15 +32,15 @@ variables:
   tags:
      - osx
   variables:
-    TCLTK_VERSION: 8.6.11
+    TCLTK_VERSION: 8.6.10
   stage: build
   before_script:
     - VERSION=$(git describe --tags || echo 0.0)
+    - mac/tcltk-wish.sh "${TCLTK_VERSION}"
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
-    - mac/tcltk-wish.sh "${TCLTK_VERSION}"
     - mac/osx-app.sh --wish "Wish-${TCLTK_VERSION}.app" ${VERSION}
 
 .build:win:
