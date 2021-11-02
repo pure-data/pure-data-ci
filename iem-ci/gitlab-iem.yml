@@ -31,12 +31,16 @@ variables:
 .build:macos: &build_macos
   tags:
      - osx
+  variables:
+    TCLTK_VERSION: 8.6.11
   stage: build
   script:
     - ./autogen.sh
+    - VERSION=$(egrep "^PACKAGE_VERSION=" configure | sed -e 's|^PACKAGE_VERSION=||' -e "s|'||g")
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
-    - make app
+    - mac/tcltk-wish.sh "${TCLTK_VERSION}"
+    - mac/osx-app.sh --wish "Wish-${TCLTK_VERSION}.app" ${VERSION}
 
 .build:win:
   stage: build
