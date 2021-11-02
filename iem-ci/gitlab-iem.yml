@@ -20,10 +20,10 @@ variables:
   image: gcc
   stage: build
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends automake libasound2-dev libjack-dev
+    - apt-get update && apt-get install -y --no-install-recommends automake libasound2-dev libjack-dev git
+    - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - VERSION=$(egrep "^PACKAGE_VERSION=" configure | sed -e 's|^PACKAGE_VERSION=||' -e "s|'||g")
     - ./configure --prefix="/Pd-${VERSION}" --enable-alsa --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make install DESTDIR=$(pwd)/
@@ -34,9 +34,10 @@ variables:
   variables:
     TCLTK_VERSION: 8.6.11
   stage: build
+  before_script:
+    - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - VERSION=$(egrep "^PACKAGE_VERSION=" configure | sed -e 's|^PACKAGE_VERSION=||' -e "s|'||g")
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - mac/tcltk-wish.sh "${TCLTK_VERSION}"
@@ -54,6 +55,7 @@ variables:
     - wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
     - unzip -q asiosdk.zip -d asio
     - for f in asio/*/; do echo "${f}"; mv "${f}" asio/ASIOSDK; done || true
+    - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
     - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
@@ -76,7 +78,6 @@ variables:
 .build:linuxmake:
   extends: .build:linux
   script:
-    - VERSION=$(git describe --tags || echo 0.0)
     - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
@@ -84,7 +85,6 @@ variables:
 .build:macosmake:
   extends: .build:macos
   script:
-    - VERSION=$(git describe --tags || echo 0.0)
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
@@ -92,7 +92,6 @@ variables:
 .build:w32make:
   extends: .build:w32
   script:
-    - VERSION=$(git describe --tags || echo 0.0)
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
@@ -101,7 +100,6 @@ variables:
 .build:w64make:
   extends: .build:w64
   script:
-    - VERSION=$(git describe --tags || echo 0.0)
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
