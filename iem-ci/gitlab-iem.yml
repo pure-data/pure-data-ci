@@ -37,10 +37,10 @@ variables:
   before_script:
     - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
     - VERSION=$(git describe --tags || echo 0.0)
-    - mac/tcltk-wish.sh "${TCLTK_VERSION}"
+    - mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\(-D[^ ]* \)|@DFLAGS@ |g' -e 's|@DFLAGS@.*@DFLAGS@|@FLAGS@|'
   script:
     - ./autogen.sh
-    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - mac/osx-app.sh --wish "Wish-${TCLTK_VERSION}.app" ${VERSION}
 
