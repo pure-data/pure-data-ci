@@ -55,7 +55,8 @@ variables:
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
     - wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
     - unzip -q asiosdk.zip -d asio
-    - for f in asio/*/; do echo "${f}"; mv "${f}" asio/ASIOSDK; done || true
+    - ls -la asio || true
+    - for f in asio/*/; do echo "${f}"; mv -v "${f%/}" asio/ASIOSDK; done || true
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
