@@ -184,7 +184,7 @@ variables:
   - *script_notarize_macos
   - *script_notarizewait_macos
   - xcrun stapler staple ${APP} || true
-  - rm -f "${PKG}"
+    #- rm -f "${PKG}"
   - mkdir -p "${APP}/Contents/_CodeSignature/"
   - cp notari* "${APP}/Contents/_CodeSignature/"
   #- hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
