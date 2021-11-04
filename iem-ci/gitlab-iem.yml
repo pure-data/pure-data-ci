@@ -56,6 +56,7 @@ variables:
     - wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
     - unzip -q asiosdk.zip -d asio
     - ls -la asio || true
+    - rm -rf asio/ASIOSDK
     - for f in asio/*/; do echo "${f}"; mv -v "${f%/}" asio/ASIOSDK; done || true
     - VERSION=$(git describe --tags || echo 0.0)
   script:
