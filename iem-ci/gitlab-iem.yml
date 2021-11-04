@@ -40,7 +40,7 @@ variables:
     - mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\(-D[^ ]* \)|@DFLAGS@ |g' -e 's|@DFLAGS@.*@DFLAGS@|@FLAGS@|'
   script:
     - ./autogen.sh
-    - ./configure --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - mac/osx-app.sh --wish "Wish-${TCLTK_VERSION}.app" ${VERSION}
 
