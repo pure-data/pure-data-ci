@@ -19,12 +19,14 @@ variables:
 .build:linux: &build_linux
   image: gcc
   stage: build
+  variables:
+    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack'
   before_script:
     - apt-get update && apt-get install -y --no-install-recommends automake libasound2-dev libjack-dev git
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure --prefix="/Pd-${VERSION}" --enable-alsa --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --prefix="/Pd-${VERSION}" ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make install DESTDIR=$(pwd)/
 
@@ -33,6 +35,7 @@ variables:
      - osx
   variables:
     TCLTK_VERSION: 8.6.10
+    PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
     - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
@@ -40,7 +43,7 @@ variables:
     - MACOSX_DEPLOYMENT_TARGET=10.6 mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'
   script:
     - ./autogen.sh
-    - ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - mac/osx-app.sh --wish "Wish-${TCLTK_VERSION}.app" ${VERSION}
 
@@ -62,7 +65,7 @@ variables:
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
@@ -289,4 +292,3 @@ macOS:
     paths:
       - Pd-*.dmg
     expire_in: 1 week
-
