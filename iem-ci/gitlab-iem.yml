@@ -264,11 +264,11 @@ w64_double:
 Linux_libpd:
   extends: Linux
   variables:
-    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack --enable-libpd --enable-libpd-instance --enable-libpd-utils'
+    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
 Darwin_libpd:
   extends: Darwin
   variables:
-    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack --enable-libpd --enable-libpd-instance --enable-libpd-utils'
+    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
 w64_libpd:
   extends: w64
   variables:
