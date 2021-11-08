@@ -34,7 +34,7 @@ variables:
   tags:
      - osx
   variables:
-    TCLTK_VERSION: 8.6.10
+    TCLTK_VERSION: 8.6.12
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
