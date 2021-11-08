@@ -57,7 +57,8 @@ variables:
     - unzip -q asiosdk.zip -d asio
     - ls -la asio || true
     - rm -rf asio/ASIOSDK
-    - for f in asio/*/; do echo "${f}"; mv -v "${f%/}" asio/ASIOSDK; done || true
+    - sync
+    - i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
