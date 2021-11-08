@@ -5,6 +5,7 @@
 variables:
   IEMCI_CONFIG_PATH: https://raw.githubusercontent.com/pure-data/pure-data-ci/master/iem-ci/gitlab-iem.yml
   PD_FLOATSIZE: 32
+  LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
 
 
 ###################################################
@@ -264,16 +265,16 @@ w64_double:
 Linux_libpd:
   extends: Linux
   variables:
-    PD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
 Darwin_libpd:
   extends: Darwin
   variables:
     TCLTK_VERSION: ''
-    PD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
 w64_libpd:
   extends: w64
   variables:
-    PD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-instance --enable-libpd-extra --enable-libpd-utils'
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
 
 ## packages
 deken:
