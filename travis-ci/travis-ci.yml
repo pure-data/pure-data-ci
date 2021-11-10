@@ -34,6 +34,7 @@ matrix:
     - os: linux
       compiler: clang
     - os: osx
+      osx_image: xcode13.1
   allow_failures:
     - os: osx
 
