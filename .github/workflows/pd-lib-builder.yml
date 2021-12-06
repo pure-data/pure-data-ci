@@ -6,21 +6,22 @@ jobs:
   Ubuntu:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt update && sudo apt install puredata-dev
 
-    - name: Install dependencies
-      run: sudo apt update && sudo apt install puredata-dev
+      - name: Checkout Code
+      - uses: actions/checkout@v2
 
-    - name: Build
-      run: make
-    - name: Install
-      run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
+      - name: Build
+        run: make
+      - name: Install
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
-    - name: Upload Ubuntu artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: ubuntu-externals
-        path: ${GITHUB_REPOSITORY##*/}
+      - name: Upload Ubuntu artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: ubuntu-externals
+          path: .github/extra/*
 
   Windows:
     runs-on: windows-latest
@@ -50,7 +51,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 #      - name: Fix dll dependencies
 #        working-directory: ssr/flext
 #        run: |
@@ -59,7 +60,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: windows-externals
-          path: ${GITHUB_REPOSITORY##*/}
+          path: .github/extra/*
 
   macOS:
     runs-on: macos-latest
@@ -75,7 +76,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 #      - name: Fix pd_darwin dependencies
 #        working-directory: ssr/flext
 #        run: |
@@ -84,4 +85,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: macos-externals
-          path: ${GITHUB_REPOSITORY##*/}
+          path: .github/extra/*
