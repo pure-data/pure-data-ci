@@ -4,8 +4,13 @@ on: workflow_call
 
 jobs:
 
-  Ubuntu-amd64-float32:
+  Ubuntu-amd64:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+         float: [32, 64]
+    env:
+      FLOATSIZE: ${{ matrix.float }}
     steps:
       - name: Install dependencies
         run: |
@@ -16,43 +21,22 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --enable-alsa --enable-jack --prefix="/Pd64-float32" CPPFLAGS="-DPD_FLOATSIZE=32"
+          ./configure --enable-alsa --enable-jack --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
           make
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: Upload Ubuntu artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: ubuntu-amd64-float32
+          name: ubuntu-amd64
           path: Pd*-float*
 
-  Ubuntu-amd64-float64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get build-dep puredata
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --enable-alsa --enable-jack --prefix="/Pd64-float64" CPPFLAGS="-DPD_FLOATSIZE=64"
-          make
-      - name: Install
-        run: make install DESTDIR=$(pwd)
-      - name: Upload Ubuntu artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: ubuntu-amd64-float64
-          path: Pd*-float*
-
-  MinGW-amd64-float32:
+  MinGW-amd64:
     runs-on: windows-latest
     defaults:
       run:
         shell: msys2 {0}
+      FLOATSIZE: 32
     steps:
       - name: Install MSYS2
         uses: msys2/setup-msys2@v2
@@ -66,7 +50,7 @@ jobs:
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --prefix="/Pd64-float32" CPPFLAGS="-DPD_FLOATSIZE=32"
+          ./configure --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
           make
       - name: Install
         run: make install DESTDIR=$(pwd)
@@ -77,101 +61,34 @@ jobs:
       - name: Upload Windows artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: mingw-amd64-float32
+          name: mingw-amd64
           path: Pd*-float*
 
-  MinGW-amd64-float64:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - name: Install MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          release: false
-          path-type: inherit
-          install: >-
-            mingw-w64-x86_64-ntldd-git
-      - name: Checkout Code
-        uses: actions/checkout@v2
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --prefix="/Pd64-float64" CPPFLAGS="-DPD_FLOATSIZE=64"
-          make
-      - name: Install
-        run: make install DESTDIR=$(pwd)
-      - name: DLL dependencies
-        run: |
-          test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
-          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: mingw-amd64-float64
-          path: Pd*-float*
-
-  macOS-amd64-float32:
+  macOS-amd64:
     runs-on: macos-latest
     env:
-      cflags: -mmacosx-version-min=10.9
+      TCLTK: 8.6.12
+      FLOATSIZE: 32
     steps:
       - name: Install macOS packages
         run: |
-          brew install jack
+          brew install jack automake autoconf gettext libtool
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           submodules: true
       - name: Build Tcl/Tk
         run: |
-          mac/tcltk-wish.sh 8.6.12
+          mac/tcltk-wish.sh "${TCLTK}
       - name: Build
         run: |
           ./autogen.sh
-          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=32"
+          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
           make
       - name: Install
-        run: mac/osx-app.sh --wish Wish-8.6.12.app amd64-float32
-#      - name: Dylib dependencies
-#        run: |
-#          test -e .git-ci/localdeps.macos.sh || (wget -q -O .git-ci/localdeps.macos.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.macos.sh" && chmod +x .git-ci/localdeps.macos.sh) || true
-#          if [ -x .git-ci/localdeps.macos.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-pd_*}" -o -name "*.so" -o -name "*.d_*" ")" -exec .git-ci/localdeps.macos.sh {} +; fi
+        run: mac/osx-app.sh --wish Wish-${TCLTK}.app amd64-float${FLOATSIZE}
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: macos-amd64-float32
-          path: Pd*-float*
-
-  macOS-amd64-float64:
-    runs-on: macos-latest
-    env:
-      cflags: -mmacosx-version-min=10.9
-    steps:
-      - name: Install macOS packages
-        run: |
-          brew install jack
-      - name: Checkout Code
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Build Tcl/Tk
-        run: |
-          mac/tcltk-wish.sh 8.6.12
-      - name: Build
-        run: |
-          ./autogen.sh
-          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=64"
-          make
-      - name: Install
-        run: mac/osx-app.sh --wish Wish-8.6.12.app amd64-float64
-#      - name: Dylib dependencies
-#        run: |
-#          test -e .git-ci/localdeps.macos.sh || (wget -q -O .git-ci/localdeps.macos.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.macos.sh" && chmod +x .git-ci/localdeps.macos.sh) || true
-#          if [ -x .git-ci/localdeps.macos.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-pd_*}" -o -name "*.so" -o -name "*.d_*" ")" -exec .git-ci/localdeps.macos.sh {} +; fi
-      - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-amd64-float64
+          name: macos-amd64
           path: Pd*-float*
