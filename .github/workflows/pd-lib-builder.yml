@@ -11,6 +11,6 @@ jobs:
 
     - name: Install dependencies
       run: sudo apt update && sudo apt install puredata-dev
-      
+
     - name: Build
       run: make
