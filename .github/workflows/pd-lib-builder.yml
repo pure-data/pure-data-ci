@@ -4,7 +4,6 @@ on: workflow_call
 
 jobs:
   Ubuntu:
-    name: Ubuntu
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -14,3 +13,67 @@ jobs:
 
     - name: Build
       run: make
+
+  Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-ntldd-git
+      - name: Install Pd
+        run: |
+          wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
+          rm -rf "${PROGRAMFILES}/pd" && mkdir -p "${PROGRAMFILES}/pd"
+          unzip -q Pd.zip -d "${PROGRAMFILES}/pd"
+          mv -v "${PROGRAMFILES}/pd"/*/* "${PROGRAMFILES}/pd"
+          rm -f Pd.zip
+          export PD="${PROGRAMFILES}/pd/bin/pd.com"
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Build
+        run: make
+      - name: Install
+        run: make install DESTDIR=$(pwd) PDLIBDIR=${GITHUB_REPOSITORY##*/}
+#      - name: Fix dll dependencies
+#        working-directory: ssr/flext
+#        run: |
+#          sh pd-lib-builder-iem-ci/pd-lib-builder/localdeps.win.sh build/ssr_*.dll
+#      - name: upload Windows externals
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: windows-externals
+#          path: ssr/flext/build/*
+
+  macOS:
+    runs-on: macos-latest
+    env:
+      cflags: -mmacosx-version-min=10.9
+    steps:
+      - name: Install macOS packages
+        run: brew install --cask pd
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Build
+        run: make
+      - name: Install
+        run: make install DESTDIR=$(pwd) PDLIBDIR=${GITHUB_REPOSITORY##*/}
+#      - name: Fix pd_darwin dependencies
+#        working-directory: ssr/flext
+#        run: |
+#          sh pd-lib-builder-iem-ci/pd-lib-builder/localdeps.macos.sh build/ssr_*.pd_darwin
+#      - name: upload macOS externals
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: macos-externals
+#          path: ssr/flext/build/*
