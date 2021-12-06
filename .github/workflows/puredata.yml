@@ -3,7 +3,6 @@ name: build a pd-lib-builder based external
 on: workflow_call
 
 jobs:
-
   Ubuntu-amd64:
     runs-on: ubuntu-latest
     strategy:
