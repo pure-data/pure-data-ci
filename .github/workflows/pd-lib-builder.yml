@@ -13,6 +13,14 @@ jobs:
 
     - name: Build
       run: make
+    - name: Install
+      run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
+
+    - name: Upload Ubuntu artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: ubuntu-externals
+        path: ${GITHUB_REPOSITORY##*/}
 
   Windows:
     runs-on: windows-latest
@@ -42,16 +50,16 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=${GITHUB_REPOSITORY##*/}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
 #      - name: Fix dll dependencies
 #        working-directory: ssr/flext
 #        run: |
 #          sh pd-lib-builder-iem-ci/pd-lib-builder/localdeps.win.sh build/ssr_*.dll
-#      - name: upload Windows externals
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: windows-externals
-#          path: ssr/flext/build/*
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: windows-externals
+          path: ${GITHUB_REPOSITORY##*/}
 
   macOS:
     runs-on: macos-latest
@@ -67,13 +75,13 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=${GITHUB_REPOSITORY##*/}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/${GITHUB_REPOSITORY##*/}
 #      - name: Fix pd_darwin dependencies
 #        working-directory: ssr/flext
 #        run: |
 #          sh pd-lib-builder-iem-ci/pd-lib-builder/localdeps.macos.sh build/ssr_*.pd_darwin
-#      - name: upload macOS externals
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: macos-externals
-#          path: ssr/flext/build/*
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: macos-externals
+          path: ${GITHUB_REPOSITORY##*/}
