@@ -1,0 +1,16 @@
+name: build a pd-lib-builder based external
+
+on: workflow_call
+
+jobs:
+  Ubuntu:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install dependencies
+      run: sudo apt update && sudo apt install puredata-dev
+      
+    - name: Build
+      run: make
