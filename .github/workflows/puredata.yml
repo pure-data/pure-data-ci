@@ -1,4 +1,4 @@
-name: build a pd-lib-builder based external
+name: Build Pure Data in various flavours...
 
 on: workflow_call
 
@@ -6,6 +6,7 @@ jobs:
   Ubuntu-amd64:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
          float: [32, 64]
     env:
@@ -14,8 +15,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y --no-install-recommends automake libasound2-dev libjack-dev git
-      - name: Checkout Code
+          sudo apt-get -y --no-install-recommends install automake libasound2-dev libjack-dev
+      - name: Checkout code
         uses: actions/checkout@v2
       - name: Build
         run: |
@@ -24,7 +25,7 @@ jobs:
           make
       - name: Install
         run: make install DESTDIR=$(pwd)
-      - name: Upload Ubuntu artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: ubuntu-amd64
@@ -35,7 +36,12 @@ jobs:
     defaults:
       run:
         shell: msys2 {0}
-      FLOATSIZE: 32
+    strategy:
+      fail-fast: false
+      matrix:
+         float: [32]
+    env:
+      FLOATSIZE: ${{ matrix.float }}
     steps:
       - name: Install MSYS2
         uses: msys2/setup-msys2@v2
@@ -44,7 +50,7 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-x86_64-ntldd-git
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v2
       - name: Build
         run: |
@@ -57,7 +63,7 @@ jobs:
         run: |
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
-      - name: Upload Windows artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: mingw-amd64
@@ -65,20 +71,24 @@ jobs:
 
   macOS-amd64:
     runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+         float: [32]
     env:
+      FLOATSIZE: ${{ matrix.float }}
       TCLTK: 8.6.12
-      FLOATSIZE: 32
     steps:
-      - name: Install macOS packages
+      - name: Install dependencies
         run: |
           brew install jack automake autoconf gettext libtool
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v2
         with:
           submodules: true
       - name: Build Tcl/Tk
         run: |
-          mac/tcltk-wish.sh "${TCLTK}
+          mac/tcltk-wish.sh "${TCLTK}"
       - name: Build
         run: |
           ./autogen.sh
@@ -86,7 +96,7 @@ jobs:
           make
       - name: Install
         run: mac/osx-app.sh --wish Wish-${TCLTK}.app amd64-float${FLOATSIZE}
-      - name: Upload macOS artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: macos-amd64
@@ -98,8 +108,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y --no-install-recommends automake
-      - name: Checkout Code
+          sudo apt-get -y --no-install-recommends install automake libasound2-dev
+      - name: Checkout code
         uses: actions/checkout@v2
       - name: Build
         run: |
@@ -107,22 +117,81 @@ jobs:
           ./configure
           make distcheck
 
-  makefile:
-      matrix:
-       experimental: [true]
-       include:
-         - os: "ubuntu"
-           ext: "gnu"
-         - os: "macos"
-           ext: "mac"
-         - os: "windows"
-           ext: "mingw"
-    runs-on: ${{ matrix.os }}-latest
-    env:
-      MAKEFILE: makefile.${{ matrix.ext }}
+  makefile_gnu:
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install libasound2-dev
+      - name: Checkout code
         uses: actions/checkout@v2
       - name: Build
         run: |
-          make -C src -f ${MAKEFILE}
+          make -C src -f makefile.gnu
+
+  makefile_mac:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        run: |
+          make -C src -f makefile.mac ARCH="" EXTRAARCH=""
+
+  makefile_mingw:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          path-type: inherit
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: ASIOSDK
+        run: |
+          wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
+          unzip -q asiosdk.zip -d asio
+          i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
+      - name: Build
+        run: |
+          make -C src -f makefile.mingw
+
+
+  makefile_msvc:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+       include:
+         - arch: "x64"
+           aflags: "/D__x86_64__"
+         - arch: "x86"
+           aflags: "/D__i386__"
+    env:
+      AFLAGS: ${{ matrix.aflags }}
+      arch: ${{ matrix.arch }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: pthreads
+        run: |
+          curl -o pthreads.zip ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
+          unzip pthreads.zip -d pthreads
+          mkdir -p src bin
+          cp pthreads/Pre-built.2/include/* src/
+          cp pthreads/Pre-built.2/dll/${arch}/pthreadVC2.dll bin/pthreadVC2.dll
+          cp pthreads/Pre-built.2/lib/${arch}/pthreadVC2.lib bin/pthreadVC.lib
+        shell: 'bash'
+      - name: Setup Visual Studio Cmdline
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+      - name: Build
+        run: |
+          cd src
+          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
