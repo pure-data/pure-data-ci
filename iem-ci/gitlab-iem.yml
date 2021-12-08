@@ -281,8 +281,8 @@ deken:
   stage: deploy
   image: debian:buster
   allow_failure: true
-  only:
-    - tags
+  rules:
+    - when: never
   variables:
     DEKEN_ROOT: "yes"
   before_script:
