@@ -35,14 +35,16 @@ variables:
   tags:
      - osx
   variables:
-    TCLTK_VERSION: ''
-    #TCLTK_VERSION: 8.6.12
+    #TCLTK_VERSION: ''
+    TCLTK_VERSION: 8.6.12
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
     - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
     - VERSION=$(git describe --tags || echo 0.0)
-    - if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
+    #- if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
+    - curl -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz
+    - tar xf Wish.app.tgz
   script:
     - ./autogen.sh
     - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
