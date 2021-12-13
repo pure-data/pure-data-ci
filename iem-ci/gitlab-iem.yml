@@ -7,6 +7,13 @@ variables:
   PD_FLOATSIZE: 32
   LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-extra --enable-libpd-utils'
 
+default:
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+
+
 
 ###################################################
 ### configuration templates (to be used for snapshot and release builds)
