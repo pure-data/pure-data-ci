@@ -43,8 +43,8 @@ variables:
     - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
     - VERSION=$(git describe --tags || echo 0.0)
     #- if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
-    - curl -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz
-    - tar xf Wish.app.tgz
+    - if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz; fi
+    - test ! -e Wish.app.tgz || tar xf Wish.app.tgz
   script:
     - ./autogen.sh
     - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
