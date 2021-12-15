@@ -3,116 +3,119 @@ name: Build Pure Data in various flavours...
 on: workflow_call
 
 jobs:
-  Ubuntu-amd64:
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-         float: [32, 64]
-    env:
-      FLOATSIZE: ${{ matrix.float }}
-    steps:
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get -y --no-install-recommends install automake libasound2-dev libjack-dev
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          ./autogen.sh
-          ./configure --enable-alsa --enable-jack --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-      - name: Build
-        run: make
-      - name: Install
-        run: make install DESTDIR=$(pwd)
-      - name: Upload artifacts
-        if: ${{ false }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: ubuntu-amd64
-          path: Pd*-float*
+################################################################
+## autotools builds on various platforms
+################################################################
+#  Ubuntu-amd64:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#         float: [32, 64]
+#    env:
+#      FLOATSIZE: ${{ matrix.float }}
+#    steps:
+#      - name: Install dependencies
+#        run: |
+#          sudo apt-get update
+#          sudo apt-get -y --no-install-recommends install automake libasound2-dev libjack-dev
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Configure
+#        run: |
+#          ./autogen.sh
+#          ./configure --enable-alsa --enable-jack --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
+#      - name: Build
+#        run: make
+#      - name: Install
+#        run: make install DESTDIR=$(pwd)
+#      - name: Upload artifacts
+#        if: ${{ false }}
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: ubuntu-amd64
+#          path: Pd*-float*
+#
+#  MinGW-amd64:
+#    runs-on: windows-latest
+#    defaults:
+#      run:
+#        shell: msys2 {0}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#         float: [32]
+#    env:
+#      FLOATSIZE: ${{ matrix.float }}
+#    steps:
+#      - name: Install MSYS2
+#        uses: msys2/setup-msys2@v2
+#        with:
+#          release: false
+#          path-type: inherit
+#          install: >-
+#            mingw-w64-x86_64-ntldd-git
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: Configure
+#        run: |
+#          ./autogen.sh
+#          ./configure --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
+#      - name: Build
+#        run: make
+#      - name: Install
+#        run: make install DESTDIR=$(pwd)
+#      - name: DLL dependencies
+#        if: ${{ false }}
+#        run: |
+#          test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
+#          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
+#      - name: Upload artifacts
+#        if: ${{ false }}
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: mingw-amd64
+#          path: Pd*-float*
+#
+#  macOS-amd64:
+#    runs-on: macos-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#         float: [32]
+#    env:
+#      FLOATSIZE: ${{ matrix.float }}
+#      TCLTK: 8.6.12
+#    steps:
+#      - name: Install dependencies
+#        run: |
+#          brew install jack automake autoconf gettext libtool
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#        with:
+#          submodules: true
+#      - name: Build Tcl/Tk
+#        if: ${{ env.TCLTK != '' }}
+#        run: |
+#          mac/tcltk-wish.sh "${TCLTK}"
+#      - name: Configure
+#        run: |
+#          ./autogen.sh
+#          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
+#      - name: Build
+#        run: make
+#      - name: Install
+#        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
+#      - name: Upload artifacts
+#        if: ${{ false }}
+#        uses: actions/upload-artifact@v2
+#        with:
+#          name: macos-amd64
+#          path: Pd*-float*
 
-  MinGW-amd64:
-    if: ${{ false }}
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    strategy:
-      fail-fast: false
-      matrix:
-         float: [32]
-    env:
-      FLOATSIZE: ${{ matrix.float }}
-    steps:
-      - name: Install MSYS2
-        uses: msys2/setup-msys2@v2
-        with:
-          release: false
-          path-type: inherit
-          install: >-
-            mingw-w64-x86_64-ntldd-git
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Configure
-        run: |
-          ./autogen.sh
-          ./configure --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-      - name: Build
-        run: make
-      - name: Install
-        run: make install DESTDIR=$(pwd)
-      - name: DLL dependencies
-        if: ${{ false }}
-        run: |
-          test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
-          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
-      - name: Upload artifacts
-        if: ${{ false }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: mingw-amd64
-          path: Pd*-float*
-
-  macOS-amd64:
-    if: ${{ false }}
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-         float: [32]
-    env:
-      FLOATSIZE: ${{ matrix.float }}
-      TCLTK: 8.6.12
-    steps:
-      - name: Install dependencies
-        run: |
-          brew install jack automake autoconf gettext libtool
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          submodules: true
-      - name: Build Tcl/Tk
-        if: ${{ env.TCLTK != '' }}
-        run: |
-          mac/tcltk-wish.sh "${TCLTK}"
-      - name: Configure
-        run: |
-          ./autogen.sh
-          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-      - name: Build
-        run: make
-      - name: Install
-        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
-      - name: Upload artifacts
-        if: ${{ false }}
-        uses: actions/upload-artifact@v2
-        with:
-          name: macos-amd64
-          path: Pd*-float*
-
+################################################################
+## basic builds
+################################################################
   dist-check:
     runs-on: ubuntu-latest
     steps:
@@ -146,7 +149,9 @@ jobs:
         run: make
 
 
-
+################################################################
+## legacy makefiles
+################################################################
   makefile_gnu:
     runs-on: ubuntu-latest
     steps:
@@ -191,38 +196,38 @@ jobs:
         run: |
           make -C src -f makefile.mingw
 
-
-  makefile_msvc:
-    if: ${{ false }}
-    runs-on: windows-latest
-    strategy:
-      fail-fast: false
-      matrix:
-       include:
-         - arch: "x64"
-           aflags: "/D__x86_64__"
-         - arch: "x86"
-           aflags: "/D__i386__"
-    env:
-      AFLAGS: ${{ matrix.aflags }}
-      arch: ${{ matrix.arch }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: pthreads
-        run: |
-          curl -o pthreads.zip ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
-          unzip pthreads.zip -d pthreads
-          mkdir -p src bin
-          cp pthreads/Pre-built.2/include/* src/
-          cp pthreads/Pre-built.2/dll/${arch}/pthreadVC2.dll bin/pthreadVC2.dll
-          cp pthreads/Pre-built.2/lib/${arch}/pthreadVC2.lib bin/pthreadVC.lib
-        shell: 'bash'
-      - name: Setup Visual Studio Cmdline
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: ${{ matrix.arch }}
-      - name: Build
-        run: |
-          cd src
-          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
+          ## the MSVC-builds are run on AppVeyor... no need to duplicate the effort
+#  makefile_msvc:
+#    if: ${{ false }}
+#    runs-on: windows-latest
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#       include:
+#         - arch: "x64"
+#           aflags: "/D__x86_64__"
+#         - arch: "x86"
+#           aflags: "/D__i386__"
+#    env:
+#      AFLAGS: ${{ matrix.aflags }}
+#      arch: ${{ matrix.arch }}
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#      - name: pthreads
+#        run: |
+#          curl -o pthreads.zip ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
+#          unzip pthreads.zip -d pthreads
+#          mkdir -p src bin
+#          cp pthreads/Pre-built.2/include/* src/
+#          cp pthreads/Pre-built.2/dll/${arch}/pthreadVC2.dll bin/pthreadVC2.dll
+#          cp pthreads/Pre-built.2/lib/${arch}/pthreadVC2.lib bin/pthreadVC.lib
+#        shell: 'bash'
+#      - name: Setup Visual Studio Cmdline
+#        uses: ilammy/msvc-dev-cmd@v1
+#        with:
+#          arch: ${{ matrix.arch }}
+#      - name: Build
+#        run: |
+#          cd src
+#          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
