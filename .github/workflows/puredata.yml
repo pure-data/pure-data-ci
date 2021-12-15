@@ -241,28 +241,32 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Find files that are executable but shouldn't be
-        run: |
-          if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|c[^.]*\|h[^.]*\)$' | grep .; then
-          if find . -type f -executable -iregex '.*\.\(pd\|txt\|h\|c[^.]*\|h[^.]*\)$' | grep .; then
-            echo "Data files should never have the EXECUTABLE BIT set!"
-            exit 2
-          fi
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Find files that are executable but shouldn't be
+      run: |
+        if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|c[^.]*\|h[^.]*\)$' | grep .; then
+        if find . -type f -executable -iregex '.*\.\(pd\|txt\|h\|c[^.]*\|h[^.]*\)$' | grep .; then
+          echo "Data files should never have the EXECUTABLE BIT set!"
+          exit 2
+        fi
 
   check_EOL:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-      - name: Find files that use CRLF line-endings
-        run: |
-          if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -iregex '.*\.\(pd\|txt\|h\|c\)$' -exec file {} + | grep CRLF; then
-            echo "some files now use CRLF as the line terminator"
-            exit 2
-          fi
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: Find files that use CRLF line-endings
+      run: |
+        if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -iregex '.*\.\(pd\|txt\|h\|c\)$' -exec file {} + | grep CRLF; then
+          echo "some files now use CRLF as the line terminator"
+          exit 2
+        fi
 
   check_whitespace:
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
