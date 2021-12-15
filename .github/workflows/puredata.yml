@@ -26,6 +26,7 @@ jobs:
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: Upload artifacts
+        if: {{ false }}
         uses: actions/upload-artifact@v2
         with:
           name: ubuntu-amd64
@@ -60,10 +61,12 @@ jobs:
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: DLL dependencies
+        if: {{ false }}
         run: |
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
       - name: Upload artifacts
+        if: {{ false }}
         uses: actions/upload-artifact@v2
         with:
           name: mingw-amd64
@@ -97,6 +100,7 @@ jobs:
       - name: Install
         run: mac/osx-app.sh --wish Wish-${TCLTK}.app amd64-float${FLOATSIZE}
       - name: Upload artifacts
+        if: {{ false }}
         uses: actions/upload-artifact@v2
         with:
           name: macos-amd64
