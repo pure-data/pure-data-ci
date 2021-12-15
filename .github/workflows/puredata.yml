@@ -90,6 +90,7 @@ jobs:
         with:
           submodules: true
       - name: Build Tcl/Tk
+        if: ${{ env.TCLTK != '' }}
         run: |
           mac/tcltk-wish.sh "${TCLTK}"
       - name: Build
@@ -98,7 +99,7 @@ jobs:
           ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
           make
       - name: Install
-        run: mac/osx-app.sh --wish Wish-${TCLTK}.app amd64-float${FLOATSIZE}
+        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
       - name: Upload artifacts
         if: {{ false }}
         uses: actions/upload-artifact@v2
