@@ -231,3 +231,34 @@ jobs:
 #        run: |
 #          cd src
 #          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
+
+
+
+################################################################
+## code linters: check permissions and whitespace
+################################################################
+  check_file_permissions:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Find files that are executable but shouldn't be
+        run: |
+          if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|h\|c[^.]*\|h[^.]*\)$' | grep .; then
+          if find . -type f -executable -iregex '.*\.\(pd\|txt\|h\|c[^.]*\|h[^.]*\)$' | grep .; then
+            echo "EXECUTABLE FILES FOUND"
+            throw "Some files have the EXECUTABLE bits set although they shouldn't"
+            exit 2
+          fi
+
+  check-whitespace:
+    if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - name: use 'git diff-index' to check for whitespace errors
+      run: |
+        git diff-index --check ${{github.event.pull_request.base.sha}}
