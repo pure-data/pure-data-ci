@@ -245,10 +245,9 @@ jobs:
       uses: actions/checkout@v2
       with:
         fetch-depth: 0
-    - name: Find files that are executable but shouldn't be
+    - name: Find files that are executable but shouldnt be
       run: |
         if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|c[^.]*\|h[^.]*\)$' | grep .; then
-        if find . -type f -executable -iregex '.*\.\(pd\|txt\|h\|c[^.]*\|h[^.]*\)$' | grep .; then
           echo "Data files should never have the EXECUTABLE BIT set!"
           exit 2
         fi
