@@ -18,11 +18,12 @@ jobs:
           sudo apt-get -y --no-install-recommends install automake libasound2-dev libjack-dev
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build
+      - name: Configure
         run: |
           ./autogen.sh
           ./configure --enable-alsa --enable-jack --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-          make
+      - name: Build
+        run: make
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: Upload artifacts
@@ -53,11 +54,12 @@ jobs:
             mingw-w64-x86_64-ntldd-git
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build
+      - name: Configure
         run: |
           ./autogen.sh
           ./configure --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-          make
+      - name: Build
+        run: make
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: DLL dependencies
@@ -93,11 +95,12 @@ jobs:
         if: ${{ env.TCLTK != '' }}
         run: |
           mac/tcltk-wish.sh "${TCLTK}"
-      - name: Build
+      - name: Configure
         run: |
           ./autogen.sh
           ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-          make
+      - name: Build
+        run: make
       - name: Install
         run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
       - name: Upload artifacts
@@ -116,11 +119,12 @@ jobs:
           sudo apt-get -y --no-install-recommends install automake libasound2-dev
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build
+      - name: Configure
         run: |
           ./autogen.sh
           ./configure
-          make distcheck
+      - name: Build
+        run: make distcheck
 
   makefile_gnu:
     runs-on: ubuntu-latest
