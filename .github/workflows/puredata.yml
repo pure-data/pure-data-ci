@@ -129,6 +129,24 @@ jobs:
       - name: Build
         run: make distcheck
 
+  libpd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get -y --no-install-recommends install automake
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Configure
+        run: |
+          ./autogen.sh
+          ./configure --disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-portaudio --disable-portmidi --enable-libpd --enable-libpd-extra --enable-libpd-utils
+      - name: Build
+        run: make
+
+
+
   makefile_gnu:
     runs-on: ubuntu-latest
     steps:
