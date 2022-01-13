@@ -276,4 +276,6 @@ jobs:
         fetch-depth: 0
     - name: use 'git diff-index' to check for whitespace errors
       run: |
-        git diff-index --check ${{github.event.pull_request.base.sha}}
+        #git diff-index --check ${{github.event.pull_request.base.sha}}
+        ## some files (like .patch files or .md) have legit trailing whitespace...
+        find . -name .git -prune -o -type f -not -iregex '.*\.\(patch\|md\)' -print0 | xargs -0 git diff-index --check ${{github.event.pull_request.base.sha}} --
