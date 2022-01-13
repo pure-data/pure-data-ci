@@ -198,8 +198,8 @@ jobs:
 
           ## the MSVC-builds are run on AppVeyor... no need to duplicate the effort
 #  makefile_msvc:
-#    if: ${{ false }}
 #    runs-on: windows-latest
+#    if: ${{ false }}
 #    strategy:
 #      fail-fast: false
 #      matrix:
@@ -268,8 +268,8 @@ jobs:
         fi
 
   check_whitespace:
-    if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
     - uses: actions/checkout@v2
       with:
