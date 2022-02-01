@@ -231,7 +231,7 @@ default:
   - test ! -e notarization-info.plist || logfile=$(defaults read $(pwd)/notarization-info.plist notarization-info | egrep '^ *LogFileURL *=' | sed -e 's|.*"\(.*\)";|\1|')
   - test -z "${logfile}" || curl "${logfile}" | tee notarization.log.json
 
-.notarize: macos:
+.notarize:macos:
   tags:
      - bigsur
   stage: deploy
