@@ -40,7 +40,7 @@ default:
 
 .build:macos: &build_macos
   tags:
-     - osx
+     - bigsur
   variables:
     #TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.12
@@ -231,9 +231,9 @@ default:
   - test ! -e notarization-info.plist || logfile=$(defaults read $(pwd)/notarization-info.plist notarization-info | egrep '^ *LogFileURL *=' | sed -e 's|.*"\(.*\)";|\1|')
   - test -z "${logfile}" || curl "${logfile}" | tee notarization.log.json
 
-.notarize:macos:
+.notarize: macos:
   tags:
-     - osx
+     - bigsur
   stage: deploy
   script:
   - *script_keychain_macos
