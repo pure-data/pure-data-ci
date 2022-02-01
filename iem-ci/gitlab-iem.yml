@@ -63,9 +63,37 @@ default:
       if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/macOS10.10_universal.tar.gz"; fi
     - test ! -e Wish.app.tgz || (tar xf Wish.app.tgz; rm Wish.app.tgz)
     - test ! -d Wish.app || mv Wish.app Wish-${TCLTK_VERSION}.app
+    - |
+        # detect macOS SDK from Xcode toolchain version & deduce archs
+        XCODE_VERSION=$(pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep "^version" | awk '{print $2}')
+        if [ "x$XCODE_VER" = "x" ] ; then
+          # no CLTools, try xcodebuild
+          XCODE_VERSION=$(xcodebuild -version | grep "^Xcode" | awk '{print $2}')
+        fi
+        XCODE_VERSION_MAJOR=$((${XCODE_VERSION%%.*}))
+        if [ $XCODE_VERSION_MAJOR -gt 11 ] ; then
+          # Xcode 12+: 11.0+
+          archs="x86_64,arm64"
+        elif [ $XCODE_VERSION_MAJOR -gt 9 ] ; then
+          # Xcode 10 - 11: 10.14 - 10.15
+          archs=""
+          echo "warning: Xcode version $XCODE_VERSION only builds single-arch" 1>&2
+        elif [ $XCODE_VERSION_MAJOR -gt 3 ] ; then
+          # Xcode 4 - 9: 10.7 - 10.13
+          archs="i386,x86_64"
+        elif [ $XCODE_VERSION_MAJOR = 3 ] ; then
+          # Xcode 3: 10.6
+          archs="ppc,i386,x86_64"
+        else
+          archs=""
+          echo "warning: unknown or unsupported Xcode version $XCODE_VERSION, not building universal" 1>&2
+        fi
+      fi
+      echo "detected Xcode-$XCODE_VERSION builds ${archs:-<default>} binaries"
+
   script:
     - ./autogen.sh
-    - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - make
     - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} ${VERSION}
 
