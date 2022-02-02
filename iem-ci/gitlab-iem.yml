@@ -360,6 +360,8 @@ deken:
     - test -z "${DEKEN_USERNAME}" || test -z "${DEKEN_PASSWORD}" || deken upload --no-source-error ./*.dek
 
 macOS:
+  tags:
+     - macos
   allow_failure: true
   stage: deploy
   extends:
