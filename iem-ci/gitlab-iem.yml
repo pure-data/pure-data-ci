@@ -180,7 +180,7 @@ default:
   - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
 
 .script:codesign:macos: &script_codesign_macos
-  - APP=${APP:-$(ls -d Pd*.app | tail)}
+  - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
   - codesignflags="${codesignflags} --sign ${sign_id}"
@@ -193,8 +193,7 @@ default:
 
 .script:notarize:macos: &script_notarize_macos
   # setup some vars
-  - APP=${APP:-$(ls -d Pd*.app | tail)}
-  - APP=${APP%/}
+  - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - PKG=${PKG:-${APP%.app}.dmg}
   - IEM_CI_PROJECT_NAME=${IEM_CI_PROJECT_NAME:-${APP%.app}}
   - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
