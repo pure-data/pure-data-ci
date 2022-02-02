@@ -162,7 +162,8 @@ default:
     - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 .script:keychain:macos: &script_keychain_macos
-  # get certificate chain
+  - |
+    # activate the certificate chain
   - curl https://developer.apple.com/certificationauthority/AppleWWDRCA.cer >/tmp/AppleWWDRCA.cer
   - curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer       >/tmp/AppleWWDRCAG3.cer
   - if test -e "${MACOS_CERTIFICATE_PFX}" && test -n "${MACOS_CERTIFICATE_PWD}"; then cat "${MACOS_CERTIFICATE_PFX}" | base64 -D >/tmp/sign.pfx; fi
@@ -180,6 +181,8 @@ default:
   - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
 
 .script:codesign:macos: &script_codesign_macos
+  - |
+    # sign the Pd.app
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
@@ -192,6 +195,8 @@ default:
   - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
 
 .script:notarize:macos: &script_notarize_macos
+  - |
+    # notarize the Pd.app
   # setup some vars
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - PKG=${PKG:-${APP%.app}.dmg}
@@ -211,6 +216,8 @@ default:
   - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || notarize_uuid=$(defaults read $(pwd)/notarize.plist notarization-upload | grep RequestUUID | sed -e 's|.*"\(.*\)";|\1|')
 
 .script:notarizewait:macos: &script_notarizewait_macos
+  - |
+    # waiting for notarization to complete on Apple's side
   # setup some vars
   - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
   - end=0
