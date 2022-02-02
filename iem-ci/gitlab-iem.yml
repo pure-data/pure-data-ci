@@ -7,7 +7,7 @@ variables:
   LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-extra --enable-libpd-utils'
   PD_FLOATSIZE:
     value: 32
-    description: bitsize of Pd's floating point representation (32 or 64)
+    description: "bitsize of Pd's floating point representation (32 or 64)"
   IEM_CI_JOBS:
     value: ""
     description: "space-separated list of jobs to run (leave empty to select ALL jobs)"
