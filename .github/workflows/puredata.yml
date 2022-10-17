@@ -122,7 +122,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y --no-install-recommends install automake libasound2-dev
+          sudo apt-get -y --no-install-recommends install automake libasound2-dev gettext
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Configure
