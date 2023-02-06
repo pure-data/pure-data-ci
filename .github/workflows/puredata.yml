@@ -187,11 +187,15 @@ jobs:
           path-type: inherit
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: Install utils
+        run: |
+           pacman.exe -S --noconfirm --noprogressbar wget unzip
       - name: ASIOSDK
         run: |
           wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
           unzip -q asiosdk.zip -d asio
           i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
+          rm -f asiosdk.zip
       - name: Build
         run: |
           make -C src -f makefile.mingw
