@@ -174,27 +174,27 @@ jobs:
         run: |
           make -C src -f makefile.mac ARCH="" EXTRAARCH=""
 
-#  makefile_mingw:
-#    runs-on: windows-latest
-#    defaults:
-#      run:
-#        shell: msys2 {0}
-#    steps:
-#      - name: Install MSYS2
-#        uses: msys2/setup-msys2@v2
-#        with:
-#          release: false
-#          path-type: inherit
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#      - name: ASIOSDK
-#        run: |
-#          wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
-#          unzip -q asiosdk.zip -d asio
-#          i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
-#      - name: Build
-#        run: |
-#          make -C src -f makefile.mingw
+  makefile_mingw:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          path-type: inherit
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: ASIOSDK
+        run: |
+          wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
+          unzip -q asiosdk.zip -d asio
+          i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
+      - name: Build
+        run: |
+          make -C src -f makefile.mingw
 
           ## the MSVC-builds are run on AppVeyor... no need to duplicate the effort
 #  makefile_msvc:
