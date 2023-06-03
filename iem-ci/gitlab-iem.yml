@@ -400,7 +400,7 @@ w64installer:
     - .base
   image: debian:latest
   before_script:
-    - apt-get update && apt-get --no-install-recommends -y install git nsis
+    - apt-get update && apt-get --no-install-recommends -y install git nsis file
     - version="$(git describe --tags --always)${versionsuffix}"
     - outdir="/tmp"
     - find "${outdir}" -maxdepth 1 -type f -name "pd-*.windows-installer.exe" -delete
