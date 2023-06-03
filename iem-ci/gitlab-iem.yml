@@ -378,6 +378,14 @@ macOS:
       - Pd-*.dmg
     expire_in: 1 week
 
+macOS-double:
+  extends:
+    - macOS
+  dependencies:
+    - Darwin_double
+  needs:
+    - Darwin_double
+
 w64installer:
   variables:
     versionsuffix: ""
@@ -410,3 +418,22 @@ w32installer:
     - w32
   needs:
     - w32
+
+w64installer-double:
+  extends:
+    - w64installer
+  variables:
+    versionsuffix: "-dbl"
+  dependencies:
+    - w64_double
+  needs:
+    - w64_double
+w32installer-double:
+  extends:
+    - w32installer
+  variables:
+    versionsuffix: "-dbl"
+  dependencies:
+    - w32_double
+  needs:
+    - w32_double
