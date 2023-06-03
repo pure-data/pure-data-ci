@@ -377,3 +377,36 @@ macOS:
     paths:
       - Pd-*.dmg
     expire_in: 1 week
+
+w64installer:
+  variables:
+    versionsuffix: ""
+    installersuffix: ""
+  dependencies:
+    - w64
+  needs:
+    - w64
+  allow_failure: true
+  stage: deploy
+  extends:
+    - .base
+  image: debian:latest
+  before_script:
+    - apt-get update && apt-get --no-install-recommends -y install git nsis
+    - version="$(git describe --tags --always)${versionsuffix}"
+    - outdir="/tmp"
+    - find "${outdir}" -maxdepth 1 -type f -name "pd-*.windows-installer.exe" -delete
+  script:
+    - msw/build-nsi.sh Pd-*/ "${version}"
+    - rm -rf Pd-*/
+    - for f in "${outdir}/pd-${version}.windows-installer.exe"; do [ -e "${f}" ] || continue; of="${f##*/}"; of="Pd-${of#pd-}"; of="${of%.windows-installer.exe}${installersuffix}.windows-installer.exe"; mv "${f}" "${of}"; done
+
+w32installer:
+  extends:
+    - w64installer
+  variables:
+    installersuffix: "-i386"
+  dependencies:
+    - w32
+  needs:
+    - w32
