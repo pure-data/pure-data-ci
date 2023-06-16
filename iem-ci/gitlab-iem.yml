@@ -112,9 +112,10 @@ default:
     - test "${with_floatsize}" != "false" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
     - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - echo "${PD_CONFIGURE_FLAGS}"
     - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"}
     - make
-    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir=$(pwd) ${VERSION}
+    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" ${VERSION}
 
 .build:win:
   stage: build
