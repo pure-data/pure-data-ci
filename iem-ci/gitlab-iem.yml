@@ -46,7 +46,11 @@ default:
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure --prefix="/Pd-${VERSION}" ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=false
+    - test "${with_floatsize}" != "false" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - ./configure --prefix="/Pd-${VERSION}" ${PD_CONFIGURE_FLAGS}
     - make
     - make install DESTDIR=$(pwd)/
 
@@ -104,9 +108,13 @@ default:
 
   script:
     - ./autogen.sh
-    - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=false
+    - test "${with_floatsize}" != "false" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"}
     - make
-    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} ${VERSION}
+    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir=$(pwd) ${VERSION}
 
 .build:win:
   stage: build
@@ -127,7 +135,11 @@ default:
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure ${PD_CONFIGURE_FLAGS} CPPFLAGS="-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=false
+    - test "${with_floatsize}" != "false" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - ./configure ${PD_CONFIGURE_FLAGS}
     - make
     - make app
     - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
@@ -369,8 +381,10 @@ macOS:
     - .base
     - .notarize:macos
   dependencies:
+    - Darwin_double
     - Darwin
   needs:
+    - Darwin_double
     - Darwin
   artifacts:
     name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
@@ -378,7 +392,7 @@ macOS:
       - Pd-*.dmg
     expire_in: 1 week
 
-macOS-double:
+.macOS-double:
   extends:
     - macOS
   dependencies:
@@ -391,8 +405,10 @@ w64installer:
     versionsuffix: ""
     installersuffix: ""
   dependencies:
+    - w64_double
     - w64
   needs:
+    - w64_double
     - w64
   allow_failure: true
   stage: deploy
@@ -415,11 +431,13 @@ w32installer:
   variables:
     installersuffix: "-i386"
   dependencies:
+    - w32_double
     - w32
   needs:
+    - w32_double
     - w32
 
-w64installer-double:
+.w64installer-double:
   extends:
     - w64installer
   variables:
@@ -428,7 +446,7 @@ w64installer-double:
     - w64_double
   needs:
     - w64_double
-w32installer-double:
+.w32installer-double:
   extends:
     - w32installer
   variables:
