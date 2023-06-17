@@ -217,7 +217,7 @@ default:
   - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tcl.framework/Versions/Current
   - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tk.framework/Versions/Current
   - find ${APP}/Contents/Resources/bin -type f                                        -exec codesign ${codesignflags} --strict --options runtime {} ";"
-  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" ")" -exec codesign ${codesignflags} --strict {} ";"
+  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" -o -name "*.so" ")" -exec codesign ${codesignflags} --strict {} ";"
   - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
 
 .script:notarize:macos: &script_notarize_macos
