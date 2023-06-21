@@ -4,7 +4,7 @@
 # hack! CI_CONFIG_PATH is unset when we use a remote...
 variables:
   IEMCI_CONFIG_PATH: https://raw.githubusercontent.com/pure-data/pure-data-ci/master/iem-ci/gitlab-iem.yml
-  LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-extra --enable-libpd-utils'
+  LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-wasapi --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-extra --enable-libpd-utils'
   PD_FLOATSIZE:
     value: 32
     description: "bitsize of Pd's floating point representation (32 or 64)"
