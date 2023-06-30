@@ -46,10 +46,7 @@ default:
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=""
-    - test "x${with_floatsize}" != "x" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
     - ./configure --prefix="/Pd-${VERSION}" ${PD_CONFIGURE_FLAGS}
     - make
@@ -109,14 +106,11 @@ default:
 
   script:
     - ./autogen.sh
-    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=""
-    - test "x${with_floatsize}" != "x" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
     - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"}
     - make
-    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} ${with_floatsize:+--builddir "$(pwd)"} ${VERSION}
+    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" ${VERSION}
 
 .build:win:
   stage: build
@@ -137,10 +131,7 @@ default:
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - ./configure --help | grep -q -- "--with-floatsize\b" && with_floatsize=true || with_floatsize=""
-    - test "x${with_floatsize}" != "x" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} CPPFLAGS=-DPD_FLOATSIZE=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
-    - test "${with_floatsize}" != "true" || test "${PD_FLOATSIZE}" != 64 || PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --program-transform-name=s/pd$/pd64/"
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
     - ./configure ${PD_CONFIGURE_FLAGS}
     - make
