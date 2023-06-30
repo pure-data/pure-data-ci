@@ -317,22 +317,31 @@ w64_make:
   allow_failure: true
 
 # double precision builds
+.double:
+  variables:
+    PD_FLOATSIZE: 64
+  rules:
+    - *rules_base
+    # only run the job if the PD_FLOATSIZE is really 64
+    - if: $PD_FLOATSIZE == "64"
+    - when: never
+
 Linux_pd64:
-  extends: Linux
-  variables:
-    PD_FLOATSIZE: 64
+  extends:
+    - Linux
+    - .double
 Darwin_pd64:
-  extends: Darwin
-  variables:
-    PD_FLOATSIZE: 64
+  extends:
+    - Darwin
+    - .double
 w32_pd64:
-  extends: w32
-  variables:
-    PD_FLOATSIZE: 64
+  extends:
+    - w32
+    - .double
 w64_pd64:
-  extends: w64
-  variables:
-    PD_FLOATSIZE: 64
+  extends:
+    - w64
+    - .double
 
 # libpd builds
 Linux_libpd:
