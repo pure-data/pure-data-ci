@@ -317,19 +317,19 @@ w64_make:
   allow_failure: true
 
 # double precision builds
-Linux_double:
+Linux_pd64:
   extends: Linux
   variables:
     PD_FLOATSIZE: 64
-Darwin_double:
+Darwin_pd64:
   extends: Darwin
   variables:
     PD_FLOATSIZE: 64
-w32_double:
+w32_pd64:
   extends: w32
   variables:
     PD_FLOATSIZE: 64
-w64_double:
+w64_pd64:
   extends: w64
   variables:
     PD_FLOATSIZE: 64
@@ -382,11 +382,11 @@ macOS:
       - Pd*.dmg
     expire_in: 1 week
 
-.macOS-double:
+macOS_pd64:
   extends:
     - macOS
   dependencies:
-    - Darwin_double
+    - Darwin_pd64
 
 w64installer:
   variables:
@@ -422,13 +422,13 @@ w32installer:
   dependencies:
     - w32
 
-.w64installer-double:
+w64installer_pd64:
   extends:
     - w64installer
   dependencies:
-    - w64_double
-.w32installer-double:
+    - w64_pd64
+w32installer_pd64:
   extends:
     - w32installer
   dependencies:
-    - w32_double
+    - w32_pd64
