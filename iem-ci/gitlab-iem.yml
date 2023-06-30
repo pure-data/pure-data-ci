@@ -113,7 +113,7 @@ default:
     - make
     - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" ${VERSION}
     # for non-merged installers, rename the double-precision app to Pd64
-    - [ "${PD_FLOATSIZE}" != 64 ] || for app in Pd-*.app; do mv "${app}" "Pd64-${app#Pd-}"; done
+    - test "${PD_FLOATSIZE}" != 64 || for app in Pd-*.app; do mv "${app}" "Pd64-${app#Pd-}"; done
 
 .build:win:
   stage: build
