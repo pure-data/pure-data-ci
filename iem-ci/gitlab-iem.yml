@@ -385,20 +385,16 @@ macOS:
     - .notarize:macos
   dependencies:
     - Darwin
-  needs:
-    - Darwin
   artifacts:
     name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
     paths:
-      - Pd-*.dmg
+      - Pd*.dmg
     expire_in: 1 week
 
-macOS-double:
+.macOS-double:
   extends:
     - macOS
   dependencies:
-    - Darwin_double
-  needs:
     - Darwin_double
 
 w64installer:
@@ -406,8 +402,6 @@ w64installer:
     versionsuffix: ""
     installersuffix: ""
   dependencies:
-    - w64
-  needs:
     - w64
   allow_failure: true
   stage: deploy
@@ -417,12 +411,17 @@ w64installer:
   before_script:
     - apt-get update && apt-get --no-install-recommends -y install git nsis file
     - version="$(git describe --tags --always)${versionsuffix}"
-    - outdir="/tmp"
-    - find "${outdir}" -maxdepth 1 -type f -name "pd-*.windows-installer.exe" -delete
+    - outdir="."
+    - find "${outdir}" -maxdepth 1 -name "*.windows-installer.exe" -delete
   script:
-    - msw/build-nsi.sh Pd-*/ "${version}"
+    - msw/build-nsi.sh -o "${outdir}" Pd-*/ "${version}"
     - rm -rf Pd-*/
-    - for f in "${outdir}/pd-${version}.windows-installer.exe"; do [ -e "${f}" ] || continue; of="${f##*/}"; of="Pd-${of#pd-}"; of="${of%.windows-installer.exe}${installersuffix}.windows-installer.exe"; mv "${f}" "${of}"; done
+    - for f in "${outdir}"/*.windows-installer.exe; do [ -e "${f}" ] || continue; of="${f##*/}"; test -z "${installersuffix}" || of="${of%.windows-installer.exe}${installersuffix}.windows-installer.exe"; test "${f}" = "${outdir}/${of}" || mv "${f}" "${of}"; done
+  artifacts:
+    name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
+    paths:
+      - *.windows-installer.exe
+    expire_in: 1 week
 
 w32installer:
   extends:
@@ -431,24 +430,14 @@ w32installer:
     installersuffix: "-i386"
   dependencies:
     - w32
-  needs:
-    - w32
 
-w64installer-double:
+.w64installer-double:
   extends:
     - w64installer
-  variables:
-    versionsuffix: "-dbl"
   dependencies:
     - w64_double
-  needs:
-    - w64_double
-w32installer-double:
+.w32installer-double:
   extends:
     - w32installer
-  variables:
-    versionsuffix: "-dbl"
   dependencies:
-    - w32_double
-  needs:
     - w32_double
