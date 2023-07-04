@@ -140,11 +140,13 @@ default:
     # if TCLTK_VERSION is set, prefer that
     - |
         if [ -n "${TCLTK_VERSION}" ]; then curl -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
+    - |
+      test -n "${WISH}" || WISH=$(tar tf  msw/pdprototype.tgz | grep -Ei "^pd/bin/Wish.*\.exe$"  | sed -e 's|.*/||' | sort | tail -1)
     # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
-    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE} ${WISH:+--with-wish=${WISH}}"
     - echo "${PD_CONFIGURE_FLAGS}"
     - ./configure ${PD_CONFIGURE_FLAGS}
     - make
