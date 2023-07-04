@@ -1,0 +1,457 @@
+# CI-configuration for building Pd on various platforms, using IEM's GitLab CI
+
+
+# hack! CI_CONFIG_PATH is unset when we use a remote...
+variables:
+  IEMCI_CONFIG_PATH: https://raw.githubusercontent.com/pure-data/pure-data-ci/main/iem-ci/puredata.yml
+  LIBPD_CONFIGURE_FLAGS: '--disable-oss --disable-alsa --disable-jack --disable-jack-framework --disable-mmio --disable-asio --disable-wasapi --disable-portaudio --disable-portmidi  --enable-libpd --enable-libpd-extra --enable-libpd-utils'
+  PD_FLOATSIZE:
+    value: 32
+    description: "bitsize of Pd's floating point representation (32 or 64)"
+  IEM_CI_JOBS:
+    value: ""
+    description: "space-separated list of jobs to run (leave empty to select ALL jobs)"
+
+default:
+  retry:
+    max: 1
+    when:
+      - runner_system_failure
+
+.rules:base: &rules_base
+  # run if IEM_CI_JOBS list is empty
+  - if: $IEM_CI_JOBS == ""
+  # run if CI_JOB_NAME is in the IEM_CI_JOBS list
+  - if: $CI_JOB_NAME =~ $IEM_CI_JOBS
+
+###################################################
+### configuration templates (to be used for snapshot and release builds)
+.base:
+  artifacts:
+    name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
+    paths:
+      - Pd-*.*
+      - Pd64-*.*
+    expire_in: 1 week
+  rules:
+    - *rules_base
+    - when: never
+
+.build:linux: &build_linux
+  image: gcc
+  stage: build
+  variables:
+    PD_CONFIGURE_FLAGS: '--enable-alsa --enable-jack'
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends automake libasound2-dev libjack-dev git
+    - VERSION=$(git describe --tags || echo 0.0)
+  script:
+    - ./autogen.sh
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - echo "${PD_CONFIGURE_FLAGS}"
+    - ./configure --prefix="/Pd-${VERSION}" ${PD_CONFIGURE_FLAGS}
+    - make
+    - make install DESTDIR=$(pwd)/
+
+.build:macos: &build_macos
+  tags:
+     - bigsur
+  variables:
+    #TCLTK_VERSION: ''
+    TCLTK_VERSION: 8.6.12
+    PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
+  stage: build
+  before_script:
+    - VERSION=$(git describe --tags || echo 0.0)
+
+    # install JACK
+    #- HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
+    - curl -L -o jack.tgz https://github.com/jackaudio/jack2-releases/releases/download/v1.9.19/jack2-macOS-universal-v1.9.19.tar.gz
+    - test ! -e jack.tgz || tar -xvf jack.tgz "jack*.pkg"
+    - for f in ./jack*.pkg; do test -e "${f}" || continue; sudo installer -pkg "${f}" -target /; done
+    - rm -f jack*.pkg jack.tgz
+
+    # install Tcl/Tk
+    #- if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
+    #- if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz; fi
+    - |
+      if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/macOS10.10_universal.tar.gz"; fi
+    - test ! -e Wish.app.tgz || (tar xf Wish.app.tgz; rm Wish.app.tgz)
+    - test ! -d Wish.app || mv Wish.app Wish-${TCLTK_VERSION}.app
+    - |
+      # detect macOS SDK from Xcode toolchain version & deduce archs
+      XCODE_VERSION=$(pkgutil --pkg-info=com.apple.pkg.CLTools_Executables | grep "^version" | awk '{print $2}')
+      if [ "x$XCODE_VER" = "x" ] ; then
+        # no CLTools, try xcodebuild
+        XCODE_VERSION=$(xcodebuild -version | grep "^Xcode" | awk '{print $2}')
+      fi
+      XCODE_VERSION_MAJOR=$((${XCODE_VERSION%%.*}))
+      if [ $XCODE_VERSION_MAJOR -gt 11 ] ; then
+        # Xcode 12+: 11.0+
+        archs="x86_64,arm64"
+      elif [ $XCODE_VERSION_MAJOR -gt 9 ] ; then
+        # Xcode 10 - 11: 10.14 - 10.15
+        archs=""
+        echo "warning: Xcode version $XCODE_VERSION only builds single-arch" 1>&2
+      elif [ $XCODE_VERSION_MAJOR -gt 3 ] ; then
+        # Xcode 4 - 9: 10.7 - 10.13
+        archs="i386,x86_64"
+      elif [ $XCODE_VERSION_MAJOR = 3 ] ; then
+        # Xcode 3: 10.6
+        archs="ppc,i386,x86_64"
+      else
+        archs=""
+        echo "warning: unknown or unsupported Xcode version $XCODE_VERSION, not building universal" 1>&2
+      fi
+      echo "detected Xcode-$XCODE_VERSION builds ${archs:-<default>} binaries"
+
+  script:
+    - ./autogen.sh
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - echo "${PD_CONFIGURE_FLAGS}"
+    - ./configure ${PD_CONFIGURE_FLAGS} ${archs:+--enable-universal="${archs}"}
+    - make
+    - mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" ${VERSION}
+    # for non-merged installers, rename the double-precision app to Pd64
+    - test "${PD_FLOATSIZE}" != 64 || for app in Pd-*.app; do mv "${app}" "Pd64-${app#Pd-}"; done
+
+.build:win:
+  stage: build
+  tags:
+    - windows
+  variables:
+    IEMCI_CONFIGURATIONS: mingw64 python2
+  before_script:
+    # helpers to embed dependencies
+    - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
+    - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
+    # ASIO
+    - wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
+    - unzip -q asiosdk.zip -d asio
+    - ls -la asio || true
+    - rm -rf asio/ASIOSDK
+    - sync
+    - i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
+    - test ! -e asio/ASIOSDK/host/pc/asiolist.cpp || sed -e "s|\b\(delete\) \(lpdrv;\)|\1 [] \2|" -i asio/ASIOSDK/host/pc/asiolist.cpp
+    # Tcl/Tk
+    # newer Tcl/Tk (as found in millers Pd-0.54-0)
+    - |
+        curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/0/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true
+    # if TCLTK_VERSION is set, prefer that
+    - |
+        if [ -n "${TCLTK_VERSION}" ]; then curl -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
+    # Pd version
+    - VERSION=$(git describe --tags || echo 0.0)
+  script:
+    - ./autogen.sh
+    - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
+    - echo "${PD_CONFIGURE_FLAGS}"
+    - ./configure ${PD_CONFIGURE_FLAGS}
+    - make
+    - make app
+    - for d in pd-*.*/; do d=${d%/}; mv -T -v "${d}" "Pd-${d#pd-}"; done || true
+    - rm -f Pd-*.*/bin/libwinpthread-1.dll Pd-*.*/bin/msvc*.dll
+    - find Pd-*.*/ "(" -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
+
+.build:w32: &build_w32
+  extends: .build:win
+  variables:
+    IEMCI_CONFIGURATIONS: mingw32 python2
+
+.build:w64: &build_w64
+  extends: .build:win
+  variables:
+    IEMCI_CONFIGURATIONS: mingw64 python2
+
+.build:linuxmake:
+  extends: .build:linux
+  script:
+    - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
+    - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.gnu prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+
+.build:macosmake:
+  extends: .build:macos
+  script:
+    - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
+    - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+
+.build:w32make:
+  extends: .build:w32
+  script:
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+    - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
+
+.build:w64make:
+  extends: .build:w64
+  script:
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
+    - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
+    - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
+
+.script:keychain:macos: &script_keychain_macos
+  - |
+    # activate the certificate chain
+  - curl https://developer.apple.com/certificationauthority/AppleWWDRCA.cer >/tmp/AppleWWDRCA.cer
+  - curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer       >/tmp/AppleWWDRCAG3.cer
+  - if test -e "${MACOS_CERTIFICATE_PFX}" && test -n "${MACOS_CERTIFICATE_PWD}"; then cat "${MACOS_CERTIFICATE_PFX}" | base64 -D >/tmp/sign.pfx; fi
+  - test -e /tmp/sign.pfx || exit 77
+  - shasum /tmp/sign.pfx
+  - keychainpass=${keychainpass:-${CI_BUILD_TOKEN:-secret$(date +%s)}}
+  - security create-keychain -p "${keychainpass}" build.keychain
+  - security default-keychain -s build.keychain
+  - security unlock-keychain -p "${keychainpass}" build.keychain
+  - security import /tmp/AppleWWDRCA.cer   -k build.keychain
+  - security import /tmp/AppleWWDRCAG3.cer -k build.keychain
+  - security import /tmp/sign.pfx -k build.keychain -P "${MACOS_CERTIFICATE_PWD}" -T /usr/bin/codesign
+  - security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k "${keychainpass}" build.keychain >/dev/null
+  - security find-identity -v
+  - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
+
+.script:codesign:macos: &script_codesign_macos
+  - |
+    # sign the Pd.app
+  - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
+  - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
+  - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
+  - codesignflags="${codesignflags} --sign ${sign_id}"
+  - echo "codesignflags ${codesignflags}"
+  - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tcl.framework/Versions/Current
+  - codesign ${codesignflags} ${APP}/Contents/Frameworks/Tk.framework/Versions/Current
+  - find ${APP}/Contents/Resources/bin -type f                                        -exec codesign ${codesignflags} --strict --options runtime {} ";"
+  - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" -o -name "*.so" ")" -exec codesign ${codesignflags} --strict {} ";"
+  - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
+
+.script:notarize:macos: &script_notarize_macos
+  - |
+    # notarize the Pd.app
+  # setup some vars
+  - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
+  - PKG=${PKG:-${APP%.app}.dmg}
+  - IEM_CI_PROJECT_NAME=${IEM_CI_PROJECT_NAME:-${APP%.app}}
+  - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
+  # try to switch to the latest and greatest XCode, so we get 'altool'
+  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
+  # check if altool exists
+  - xcrun --find altool
+  # stuff everything into a disk image
+  - test "${PKG}" = "${PKG%.dmg}" || hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}"
+  # or a ZIP-file , if you really want
+  - test "${PKG}" = "${PKG%.zip}" || zip -r -y "${PKG}" "${IEM_CI_PKGLIBDIR:-${IEM_CI_PROJECT_NAME}}"
+  # and upload to apple...
+  - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || (xcrun altool --notarize-app --primary-bundle-id "${BUNDLE_ID}" --username "${APPLE_ID}" --password "${APPLE_PWD}" --file "${PKG}" --verbose --output-format xml > notarize.plist && defaults read $(pwd)/notarize.plist notarization-upload)
+  # read back the UUID of the notarization request
+  - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || notarize_uuid=$(defaults read $(pwd)/notarize.plist notarization-upload | grep RequestUUID | sed -e 's|.*"\(.*\)";|\1|')
+
+.script:notarizewait:macos: &script_notarizewait_macos
+  - |
+    # waiting for notarization to complete on Apple's side
+  # setup some vars
+  - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
+  - end=0
+  - logfile=""
+  - test -z "${notarize_uuid}" || test 0 -ge ${NOTARIZE_TIMEOUT} || end=$(($(date +%s) + ${NOTARIZE_TIMEOUT}))
+  # wait until either
+  # - the current date exceeds the timeout
+  # - the Status is no longer 'in progress'
+  - |
+    while [ ${end} -gt $(date +%s) ]; do
+      sleep 10;
+      date;
+      xcrun altool -u "${APPLE_ID}" -p "${APPLE_PWD}" --output-format xml --notarization-info "${notarize_uuid}" > notarization-info.plist;
+      defaults read $(pwd)/notarization-info.plist notarization-info | tee /dev/stderr | egrep "Status.*in progress" >/dev/null && continue || break;
+    done
+  # check whether there's a logfile to report
+  - test ! -e notarization-info.plist || logfile=$(defaults read $(pwd)/notarization-info.plist notarization-info | egrep '^ *LogFileURL *=' | sed -e 's|.*"\(.*\)";|\1|')
+  - test -z "${logfile}" || curl "${logfile}" | tee notarization.log.json
+
+.notarize:macos:
+  tags:
+     - bigsur
+  stage: deploy
+  script:
+  - *script_keychain_macos
+  - *script_codesign_macos
+  - *script_notarize_macos
+  - *script_notarizewait_macos
+  - xcrun stapler staple ${APP} || true
+    #- rm -f "${PKG}"
+  - mkdir -p "${APP}/Contents/_CodeSignature/"
+  - cp notari* "${APP}/Contents/_CodeSignature/"
+  #- hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
+
+###################################################
+### the actual jobs: (linux,macos,windows)*(release,snapshot)
+
+# builds using the autotools buildsystem
+Linux:
+  extends:
+    - .base
+    - .build:linux
+Darwin:
+  extends:
+    - .base
+    - .build:macos
+w32:
+  extends:
+    - .base
+    - .build:w32
+w64:
+  extends:
+    - .base
+    - .build:w64
+
+# builds using the makefile buildsystem
+Linux_make:
+  extends:
+    - .base
+    - .build:linuxmake
+
+Darwin_make:
+  extends:
+    - .base
+    - .build:macosmake
+  allow_failure: true
+
+w32_make:
+  extends:
+    - .base
+    - .build:w32make
+  allow_failure: true
+
+w64_make:
+  extends:
+    - .base
+    - .build:w64make
+  allow_failure: true
+
+# double precision builds
+.double:
+  variables:
+    PD_FLOATSIZE: 64
+  rules:
+    - *rules_base
+    # only run the job if the PD_FLOATSIZE is really 64
+    - if: $PD_FLOATSIZE == "64"
+    - when: never
+
+Linux_pd64:
+  extends:
+    - Linux
+    - .double
+Darwin_pd64:
+  extends:
+    - Darwin
+    - .double
+w32_pd64:
+  extends:
+    - w32
+    - .double
+w64_pd64:
+  extends:
+    - w64
+    - .double
+
+# libpd builds
+Linux_libpd:
+  extends: Linux
+  variables:
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
+Darwin_libpd:
+  extends: Darwin
+  variables:
+    TCLTK_VERSION: ''
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
+w64_libpd:
+  extends: w64
+  variables:
+    PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
+
+## packages
+deken:
+  stage: deploy
+  image: debian:buster
+  allow_failure: true
+  rules:
+    - when: never
+  variables:
+    DEKEN_ROOT: "yes"
+  before_script:
+    - apt-get update && apt-get --no-install-recommends -y install deken git
+  script:
+    - git archive --format=tar --prefix=tmp/${CI_PROJECT_NAME}/ HEAD | tar xf -
+    - deken package --version="${CI_COMMIT_TAG#v}" "tmp/${CI_PROJECT_NAME}"
+    - deken package --version="${CI_COMMIT_TAG#v}" "${CI_PROJECT_NAME}"
+    - test -z "${DEKEN_USERNAME}" || test -z "${DEKEN_PASSWORD}" || deken upload --no-source-error ./*.dek
+
+macOS:
+  tags:
+     - osx
+  allow_failure: true
+  stage: deploy
+  extends:
+    - .base
+    - .notarize:macos
+  # can run as soon as Darwin has finished (and needs artifacts from Darwin)
+  needs:
+    - Darwin
+  artifacts:
+    name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
+    paths:
+      - Pd*.dmg
+    expire_in: 1 week
+
+macOS_pd64:
+  extends:
+    - macOS
+  needs:
+    - Darwin_pd64
+
+w64installer:
+  variables:
+    versionsuffix: ""
+    installersuffix: ""
+  needs:
+    - w64
+  allow_failure: true
+  stage: deploy
+  extends:
+    - .base
+  image: debian:latest
+  before_script:
+    - apt-get update && apt-get --no-install-recommends -y install git nsis file
+    - version="$(git describe --tags --always)${versionsuffix}"
+    - outdir="."
+    - find "${outdir}" -maxdepth 1 -name "*.windows-installer.exe" -delete
+  script:
+    - msw/build-nsi.sh -o "${outdir}" Pd-*/ "${version}"
+    - rm -rf Pd-*/
+    - for f in "${outdir}"/*.windows-installer.exe; do [ -e "${f}" ] || continue; of="${f##*/}"; test -z "${installersuffix}" || of="${of%.windows-installer.exe}${installersuffix}.windows-installer.exe"; test "${f}" = "${outdir}/${of}" || mv "${f}" "${of}"; done
+  artifacts:
+    name: ${CI_PROJECT_NAME}_${CI_COMMIT_REF_NAME}_${CI_JOB_NAME%_*}
+    paths:
+      - "*.windows-installer.exe"
+    expire_in: 1 week
+
+w32installer:
+  extends:
+    - w64installer
+  variables:
+    installersuffix: "-i386"
+  needs:
+    - w32
+
+w64installer_pd64:
+  extends:
+    - w64installer
+  needs:
+    - w64_pd64
+w32installer_pd64:
+  extends:
+    - w32installer
+  needs:
+    - w32_pd64
