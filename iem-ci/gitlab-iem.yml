@@ -122,8 +122,10 @@ default:
   variables:
     IEMCI_CONFIGURATIONS: mingw64 python2
   before_script:
+    # helpers to embed dependencies
     - wget -q -O msw/localdeps.sh "${IEMCI_CONFIG_PATH%/*}/localdeps.win.sh" && chmod +x msw/localdeps.sh || true
     - pacman --noconfirm -S --needed "${MINGW_PACKAGE_PREFIX}-ntldd"
+    # ASIO
     - wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
     - unzip -q asiosdk.zip -d asio
     - ls -la asio || true
@@ -131,6 +133,14 @@ default:
     - sync
     - i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
     - test ! -e asio/ASIOSDK/host/pc/asiolist.cpp || sed -e "s|\b\(delete\) \(lpdrv;\)|\1 [] \2|" -i asio/ASIOSDK/host/pc/asiolist.cpp
+    # Tcl/Tk
+    # newer Tcl/Tk (as found in millers Pd-0.54-0)
+    - |
+        curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/0/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true
+    # if TCLTK_VERSION is set, prefer that
+    - |
+        if [ -n "${TCLTK_VERSION}" ]; then curl -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
+    # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
   script:
     - ./autogen.sh
