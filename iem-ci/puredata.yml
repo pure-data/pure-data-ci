@@ -59,6 +59,7 @@ default:
   variables:
     #TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.13
+    JACK_VERSION: v1.9.19
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
@@ -66,7 +67,7 @@ default:
 
     # install JACK
     #- HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
-    - curl -L -o jack.tgz https://github.com/jackaudio/jack2-releases/releases/download/v1.9.19/jack2-macOS-universal-v1.9.19.tar.gz
+    - curl --fail -L -o jack.tgz https://github.com/jackaudio/jack2-releases/releases/download/${JACK_VERSION}/jack2-macOS-universal-${JACK_VERSION}.tar.gz || true
     - test ! -e jack.tgz || tar -xvf jack.tgz "jack*.pkg"
     - for f in ./jack*.pkg; do test -e "${f}" || continue; sudo installer -pkg "${f}" -target /; done
     - rm -f jack*.pkg jack.tgz
