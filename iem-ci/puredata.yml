@@ -58,7 +58,7 @@ default:
      - bigsur
   variables:
     #TCLTK_VERSION: ''
-    TCLTK_VERSION: 8.6.12
+    TCLTK_VERSION: 8.6.13
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
