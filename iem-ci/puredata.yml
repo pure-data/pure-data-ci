@@ -59,7 +59,7 @@ default:
   variables:
     #TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.13
-    JACK_VERSION: v1.9.19
+    JACK_VERSION: v1.9.22
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
