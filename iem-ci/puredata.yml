@@ -73,9 +73,9 @@ default:
 
     # install Tcl/Tk
     #- if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
-    #- if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz; fi
+    #- if [ -n "${TCLTK_VERSION}" ]; then curl --fail -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz; fi
     - |
-      if [ -n "${TCLTK_VERSION}" ]; then curl -L -o Wish.app.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/macOS10.10_universal.tar.gz"; fi
+      if [ -n "${TCLTK_VERSION}" ]; then curl --fail -L -o Wish.app.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/macOS10.10_universal.tar.gz"; fi
     - test ! -e Wish.app.tgz || (tar xf Wish.app.tgz; rm Wish.app.tgz)
     - test ! -d Wish.app || mv Wish.app Wish-${TCLTK_VERSION}.app
     - |
@@ -139,7 +139,7 @@ default:
         curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/0/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true
     # if TCLTK_VERSION is set, prefer that
     - |
-        if [ -n "${TCLTK_VERSION}" ]; then curl -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
+        if [ -n "${TCLTK_VERSION}" ]; then curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
     - |
       test -n "${WISH}" || WISH=$(tar tf  msw/pdprototype.tgz | grep -Ei "^pd/bin/Wish.*\.exe$"  | sed -e 's|.*/||' | sort | tail -1)
     # Pd version
