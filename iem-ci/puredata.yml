@@ -67,12 +67,14 @@ default:
 
     # install JACK
     #- HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
+    - echo "Getting JACK-${JACK_VERSION}"
     - curl --fail -L -o jack.tgz https://github.com/jackaudio/jack2-releases/releases/download/${JACK_VERSION}/jack2-macOS-universal-${JACK_VERSION}.tar.gz || true
     - test ! -e jack.tgz || tar -xvf jack.tgz "jack*.pkg"
     - for f in ./jack*.pkg; do test -e "${f}" || continue; sudo installer -pkg "${f}" -target /; done
     - rm -f jack*.pkg jack.tgz
 
     # install Tcl/Tk
+    - echo "Getting Tcl/Tk-${TCLTK_VERSION}"
     #- if [ -n "${TCLTK_VERSION}" ]; then mac/tcltk-wish.sh "${TCLTK_VERSION}" | sed -e 's|\\ |@SPACE@|g' -e 's|\(-D[^ ]* \)\+|@DEFINES@ |g' -e 's|\(-I[^ ]* \)\+|@INCLUDES@ |g' -e 's|@SPACE@|\\ |' -e 's|  *| |g'; fi
     #- if [ -n "${TCLTK_VERSION}" ]; then curl --fail -L -o Wish.app.tgz http://msp.ucsd.edu/tmp/Wish-${TCLTK_VERSION}.app.tgz; fi
     - |
@@ -139,6 +141,7 @@ default:
     - |
         curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/0/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true
     # if TCLTK_VERSION is set, prefer that
+    - echo "Getting Tcl/Tk-${TCLTK_VERSION}"
     - |
         if [ -n "${TCLTK_VERSION}" ]; then curl --fail -L -o msw/pdprototype.tgz --header "JOB-TOKEN: $CI_JOB_TOKEN" "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/TclTk/${TCLTK_VERSION}/${MINGW_PACKAGE_PREFIX}-pdprototype.tgz" || true; fi
     - |
