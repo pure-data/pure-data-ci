@@ -1,5 +1,11 @@
 # CI-configuration for building Pd on various platforms, using IEM's GitLab CI
 
+stages:
+  - build
+  - build:secondary
+  - test
+  - deploy
+
 
 # hack! CI_CONFIG_PATH is unset when we use a remote...
 variables:
@@ -313,23 +319,27 @@ w64:
 
 # builds using the makefile buildsystem
 Linux_make:
+  stage: build:secondary
   extends:
     - .base
     - .build:linuxmake
 
 Darwin_make:
+  stage: build:secondary
   extends:
     - .base
     - .build:macosmake
   allow_failure: true
 
 w32_make:
+  stage: build:secondary
   extends:
     - .base
     - .build:w32make
   allow_failure: true
 
 w64_make:
+  stage: build:secondary
   extends:
     - .base
     - .build:w64make
@@ -346,33 +356,40 @@ w64_make:
     - when: never
 
 Linux_pd64:
+  stage: build:secondary
   extends:
     - Linux
     - .double
 Darwin_pd64:
+  stage: build:secondary
   extends:
     - Darwin
     - .double
 w32_pd64:
+  stage: build:secondary
   extends:
     - w32
     - .double
 w64_pd64:
+  stage: build:secondary
   extends:
     - w64
     - .double
 
 # libpd builds
 Linux_libpd:
+  stage: build:secondary
   extends: Linux
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
 Darwin_libpd:
+  stage: build:secondary
   extends: Darwin
   variables:
     TCLTK_VERSION: ''
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
 w64_libpd:
+  stage: build:secondary
   extends: w64
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
