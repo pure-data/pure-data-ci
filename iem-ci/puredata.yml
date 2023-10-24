@@ -353,7 +353,9 @@ w64_make:
   rules:
     - *rules_base
     # only run the job if the PD_FLOATSIZE is really 64
-    - if: $PD_FLOATSIZE == "64"
+    # (and the job is selected)
+    - if: $PD_FLOATSIZE == "64" && $IEM_CI_JOBS == ""
+    - if: $PD_FLOATSIZE == "64" && $CI_JOB_NAME =~ $IEM_CI_JOBS
     - when: never
 
 Linux_pd64:
