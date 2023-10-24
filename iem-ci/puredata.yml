@@ -1,3 +1,4 @@
+---
 # CI-configuration for building Pd on various platforms, using IEM's GitLab CI
 
 stages:
@@ -61,9 +62,9 @@ default:
 
 .build:macos: &build_macos
   tags:
-     - bigsur
+    - bigsur
   variables:
-    #TCLTK_VERSION: ''
+    # TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.13
     JACK_VERSION: v1.9.22
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
@@ -283,18 +284,18 @@ default:
 
 .notarize:macos:
   tags:
-     - bigsur
+    - bigsur
   stage: deploy
   script:
-  - *script_keychain_macos
-  - *script_codesign_macos
-  - *script_notarize_macos
-  - *script_notarizewait_macos
-  - xcrun stapler staple ${APP} || true
+    - *script_keychain_macos
+    - *script_codesign_macos
+    - *script_notarize_macos
+    - *script_notarizewait_macos
+    - xcrun stapler staple ${APP} || true
     #- rm -f "${PKG}"
-  - mkdir -p "${APP}/Contents/_CodeSignature/"
-  - cp notari* "${APP}/Contents/_CodeSignature/"
-  #- hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
+    - mkdir -p "${APP}/Contents/_CodeSignature/"
+    - cp notari* "${APP}/Contents/_CodeSignature/"
+    #- hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${APP%.app}.dmg"
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
@@ -413,7 +414,7 @@ deken:
 
 macOS:
   tags:
-     - osx
+    - osx
   allow_failure: true
   stage: deploy
   extends:
