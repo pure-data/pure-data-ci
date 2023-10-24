@@ -44,6 +44,11 @@ default:
     - *rules_base
     - when: never
 
+.build2:
+  stage: build:secondary
+  dependencies: []
+  needs: []
+
 .build:linux: &build_linux
   image: gcc
   stage: build
@@ -320,34 +325,36 @@ w64:
 
 # builds using the makefile buildsystem
 Linux_make:
-  stage: build:secondary
   extends:
     - .base
     - .build:linuxmake
+    - .build2
 
 Darwin_make:
-  stage: build:secondary
   extends:
     - .base
     - .build:macosmake
+    - .build2
   allow_failure: true
 
 w32_make:
-  stage: build:secondary
   extends:
     - .base
     - .build:w32make
+    - .build2
   allow_failure: true
 
 w64_make:
-  stage: build:secondary
   extends:
     - .base
     - .build:w64make
+    - .build2
   allow_failure: true
 
 # double precision builds
 .double:
+  extends:
+    - .build2
   variables:
     PD_FLOATSIZE: 64
   rules:
@@ -358,41 +365,40 @@ w64_make:
     - when: never
 
 Linux_pd64:
-  stage: build:secondary
   extends:
     - Linux
     - .double
 Darwin_pd64:
-  stage: build:secondary
   extends:
     - Darwin
     - .double
 w32_pd64:
-  stage: build:secondary
   extends:
     - w32
     - .double
 w64_pd64:
-  stage: build:secondary
   extends:
     - w64
     - .double
 
 # libpd builds
 Linux_libpd:
-  stage: build:secondary
-  extends: Linux
+  extends:
+    - Linux
+    - .build2
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
 Darwin_libpd:
-  stage: build:secondary
-  extends: Darwin
+  extends:
+    - Darwin
+    - .build2
   variables:
     TCLTK_VERSION: ''
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
 w64_libpd:
-  stage: build:secondary
-  extends: w64
+  extends:
+    - w64
+    - .build2
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
 
