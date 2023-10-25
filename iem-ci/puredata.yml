@@ -259,7 +259,7 @@ default:
   # or a ZIP-file , if you really want
   - test "${PKG}" = "${PKG%.zip}" || zip -r -y "${PKG}" "${IEM_CI_PKGLIBDIR:-${IEM_CI_PROJECT_NAME}}"
 
-.script:notarize:macos: &script_notarize_macos
+.script_legacy:notarize:macos: &script0_notarize_macos
   - |
     # notarize the Pd.app
   # try to switch to the latest and greatest XCode, so we get 'altool'
@@ -271,7 +271,7 @@ default:
   # read back the UUID of the notarization request
   - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || notarize_uuid=$(defaults read $(pwd)/notarize.plist notarization-upload | grep RequestUUID | sed -e 's|.*"\(.*\)";|\1|')
 
-.script:notarizewait:macos: &script_notarizewait_macos
+.script_legacy:notarizewait:macos: &script0_notarizewait_macos
   - |
     # waiting for notarization to complete on Apple's side
   # setup some vars
@@ -292,6 +292,19 @@ default:
   - test ! -e notarization-info.plist || logfile=$(defaults read $(pwd)/notarization-info.plist notarization-info | egrep '^ *LogFileURL *=' | sed -e 's|.*"\(.*\)";|\1|')
   - test -z "${logfile}" || curl "${logfile}" | tee notarization.log.json
 
+.script:notarize:macos: &script_notarize_macos
+  # get new notarize tool
+  - rm -rf .git-ci/notarytool
+  - mkdir -p .git-ci/notarytool
+  - curl -fsL -o .git-ci/notarytool/notarytool.py https://git.iem.at/zmoelnig/notarytool/-/raw/main/notarytool.py || true
+  - test ! -e .git-ci/notarytool/notarytool.py || chmod +x .git-ci/notarytool/notarytool.py
+  - test ! -e .git-ci/notarytool/notarytool.py || curl -fsL -o .git-ci/notarytool/requirements.txt https://git.iem.at/zmoelnig/notarytool/-/raw/main/requirements.txt || true
+  - test ! -e .git-ci/notarytool/requirements.txt || python3 -m pip install -r .git-ci/notarytool/requirements.txt || true
+  - .git-ci/notarytool/notarytool.py --help || true
+  # and upload to apple (2023)...
+  - notarize_files=""
+  - test -z "${APPLE_ISSUER_ID}" || test -z "${APPLE_KEY_ID}" || test ! -e "${APPLE_KEY_FILE}" || .git-ci/notarytool/notarytool.py -v --private-keyfile "${APPLE_KEY_FILE}" --key-id "${APPLE_KEY_ID}" --issuer-id "${APPLE_ISSUER_ID}" --wait --wait-timeout ${NOTARIZE_TIMEOUT} --status-file notarization.log.json "${PKG}"
+
 .notarize:macos:
   tags:
     - bigsur
@@ -301,7 +314,6 @@ default:
     - *script_codesign_macos
     - *script_notarizeprepare_macos
     - *script_notarize_macos
-    - *script_notarizewait_macos
     - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
     - stapled=false
