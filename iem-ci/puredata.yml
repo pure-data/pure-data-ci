@@ -246,23 +246,26 @@ default:
   - find ${APP}/Contents/Resources     -type f "(" -name "*.d_*" -o -name "*.pd_" -o -name "*.so" ")" -exec codesign ${codesignflags} --strict {} ";"
   - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
 
-.script:notarize:macos: &script_notarize_macos
-  - |
-    # notarize the Pd.app
+.script:notarizeprepare:macos: &script_notarizeprepare_macos
   # setup some vars
+  - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - PKG=${PKG:-${APP%.app}.dmg}
   - IEM_CI_PROJECT_NAME=${IEM_CI_PROJECT_NAME:-${APP%.app}}
   - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
-  # try to switch to the latest and greatest XCode, so we get 'altool'
-  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
-  # check if altool exists
-  - xcrun --find altool
   # stuff everything into a disk image
   - test "${PKG}" = "${PKG%.dmg}" || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
   - test -e "${PKG}"
   # or a ZIP-file , if you really want
   - test "${PKG}" = "${PKG%.zip}" || zip -r -y "${PKG}" "${IEM_CI_PKGLIBDIR:-${IEM_CI_PROJECT_NAME}}"
+
+.script:notarize:macos: &script_notarize_macos
+  - |
+    # notarize the Pd.app
+  # try to switch to the latest and greatest XCode, so we get 'altool'
+  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
+  # check if altool exists
+  - xcrun --find altool
   # and upload to apple...
   - test -z "${APPLE_ID}" || test -z "${APPLE_PWD}" || (xcrun altool --notarize-app --primary-bundle-id "${BUNDLE_ID}" --username "${APPLE_ID}" --password "${APPLE_PWD}" --file "${PKG}" --verbose --output-format xml > notarize.plist && defaults read $(pwd)/notarize.plist notarization-upload)
   # read back the UUID of the notarization request
@@ -272,7 +275,6 @@ default:
   - |
     # waiting for notarization to complete on Apple's side
   # setup some vars
-  - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
   - end=0
   - logfile=""
   - test -z "${notarize_uuid}" || test 0 -ge ${NOTARIZE_TIMEOUT} || end=$(($(date +%s) + ${NOTARIZE_TIMEOUT}))
@@ -297,6 +299,7 @@ default:
   script:
     - *script_keychain_macos
     - *script_codesign_macos
+    - *script_notarizeprepare_macos
     - *script_notarize_macos
     - *script_notarizewait_macos
     - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
