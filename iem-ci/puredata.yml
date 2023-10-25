@@ -253,6 +253,8 @@ default:
   - PKG=${PKG:-${APP%.app}.dmg}
   - IEM_CI_PROJECT_NAME=${IEM_CI_PROJECT_NAME:-${APP%.app}}
   - BUNDLE_ID=${BUNDLE_ID:-$(echo $(echo ${CI_SERVER_HOST} | tr '.' $'\n' | (tac 2>/dev/null || tail -r) | paste -s -d '.' -).${CI_PROJECT_NAMESPACE}.${CI_PROJECT_NAME} | sed -e 's/[^a-zA-Z0-9-]/./g' | tr 'A-Z' 'a-z')}
+  # try to switch to the latest and greatest XCode, so we get 'altool' and 'stapler'
+  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
   # stuff everything into a disk image
   - test "${PKG}" = "${PKG%.dmg}" || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
   - test -e "${PKG}"
@@ -262,8 +264,6 @@ default:
 .script_legacy:notarize:macos: &script0_notarize_macos
   - |
     # notarize the Pd.app
-  # try to switch to the latest and greatest XCode, so we get 'altool'
-  - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
   # check if altool exists
   - xcrun --find altool
   # and upload to apple...
@@ -317,6 +317,7 @@ default:
     - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
     - stapled=false
+    - xcrun --find stapler
     - xcrun stapler staple "${APP}" || stapled=true
     - test ! ${stapled} || rm -f "${PKG}"
     - test ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
