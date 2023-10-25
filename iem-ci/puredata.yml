@@ -299,7 +299,7 @@ default:
     - *script_notarizewait_macos
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || cp -R "${PKG}" "${PKG%.dmg}_unstapled.dmg"
     - xcrun stapler staple "${PKG}" || true
-    - test -z "${KEEP_UNSTAPLED}" || rm -rf notari*
+    - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
