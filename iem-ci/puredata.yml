@@ -299,7 +299,7 @@ default:
     - *script_codesign_macos
     - *script_notarize_macos
     - *script_notarizewait_macos
-    - PKG_unstapled="${PKG%.dmg}_unstapled"
+    - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
     - stapled=false
     - xcrun stapler staple "${APP}" || stapled=true
