@@ -298,7 +298,7 @@ default:
     - *script_notarize_macos
     - *script_notarizewait_macos
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || cp -R "${PKG}" "${PKG%.dmg}_unstapled.dmg"
-    - xcrun stapler staple "${PKG}" || true
+    - xcrun stapler staple "${PKG}" || rm -f "${PKG%.dmg}_unstapled.dmg"
     - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 ###################################################
