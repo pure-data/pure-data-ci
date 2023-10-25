@@ -301,8 +301,8 @@ default:
     - PKG_unstapled="${PKG%.dmg}_unstapled"
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || cp -R "${PKG}" "${PKG_unstapled}"
     - xcrun stapler staple "${PKG}" || true
-    - if diff -q "${PKG}" "${PKG_unstapled}"; then rm "${PKG_unstapled}"
-    - if diff -q "${PKG}" "${PKG_unsigned}"; then rm "${PKG_unsigned}"
+    - if diff -q "${PKG}" "${PKG_unstapled}"; then rm -f "${PKG_unstapled}"; fi
+    - if diff -q "${PKG}" "${PKG_unsigned}"; then rm -f "${PKG_unsigned}"; fi
     - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 ###################################################
