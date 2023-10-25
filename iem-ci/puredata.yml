@@ -234,7 +234,7 @@ default:
   - |
     # sign the Pd.app
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
-  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || cp -R "${APP}" "${APP%.app}_unsigned.app"
+  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || hdiutil create -volname "${IEM_CI_PROJECT_NAME}-unsigned" -format UDZO -srcfolder "${APP}" "${APP%.app}_unsigned.dmg" || echo "oops $?"
   - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
   - codesignflags="${codesignflags} --sign ${sign_id}"
