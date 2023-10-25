@@ -304,8 +304,8 @@ default:
     - xcrun stapler staple "${APP}" || stapled=true
     - test ! ${stapled} || hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || echo "oops $?"
     - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
-    - if diff -q "${PKG}" "${PKG_unstapled}"; then rm -f "${PKG_unstapled}"; fi
-    - if diff -q "${PKG}" "${PKG_unsigned}"; then rm -f "${PKG_unsigned}"; fi
+    - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
+    - if diff -q "${PKG}" "${PKG_unstapled}"; then echo "removing identical unstapled files"; rm -f "${PKG_unstapled}"; fi
     - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 ###################################################
