@@ -318,6 +318,7 @@ default:
     - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
     - stapled=false
     - xcrun stapler staple "${APP}" || stapled=true
+    - test ! ${stapled} || rm -f "${PKG}"
     - test ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
     - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
     - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
