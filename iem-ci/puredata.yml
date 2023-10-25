@@ -234,7 +234,8 @@ default:
   - |
     # sign the Pd.app
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
-  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || hdiutil create -volname "${IEM_CI_PROJECT_NAME}-unsigned" -format UDZO -srcfolder "${APP}" "${APP%.app}_unsigned.dmg" || echo "oops $?"
+  - PKG_unsigned="${APP%.app}_unsigned.dmg"
+  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG_unsigned}" || echo "oops $?"
   - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
   - codesignflags="${codesignflags} --sign ${sign_id}"
@@ -297,8 +298,11 @@ default:
     - *script_codesign_macos
     - *script_notarize_macos
     - *script_notarizewait_macos
-    - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || cp -R "${PKG}" "${PKG%.dmg}_unstapled.dmg"
-    - xcrun stapler staple "${PKG}" || rm -f "${PKG%.dmg}_unstapled.dmg"
+    - PKG_unstapled="${PKG%.dmg}_unstapled"
+    - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || cp -R "${PKG}" "${PKG_unstapled}"
+    - xcrun stapler staple "${PKG}" || true
+    - if diff -q "${PKG}" "${PKG_unstapled}"; then rm "${PKG_unstapled}"
+    - if diff -q "${PKG}" "${PKG_unsigned}"; then rm "${PKG_unsigned}"
     - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 ###################################################
