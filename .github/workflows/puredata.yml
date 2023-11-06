@@ -1,3 +1,4 @@
+---
 name: Build Pure Data in various flavours...
 
 on: workflow_call
@@ -237,7 +238,6 @@ jobs:
 #          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
 
 
-
 ################################################################
 ## code linters: check permissions and whitespace
 ################################################################
@@ -245,44 +245,44 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Find files that are executable but shouldnt be
-      run: |
-        if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|c[^.]*\|h[^.]*\)$' | grep .; then
-          echo "Data files should never have the EXECUTABLE BIT set!"
-          exit 2
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Find files that are executable but shouldnt be
+        run: |
+          if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -executable -iregex '.*\.\(pd\|txt\|c[^.]*\|h[^.]*\)$' | grep .; then
+            echo "Data files should never have the EXECUTABLE BIT set!"
+            exit 2
+          fi
 
   check_EOL:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: Find files that use CRLF line-endings
-      run: |
-        if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -iregex '.*\.\(pd\|txt\|h\|c\)$' -exec file {} + | grep CRLF; then
-          echo "some files now use CRLF as the line terminator"
-          exit 2
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Find files that use CRLF line-endings
+        run: |
+          if find $(git diff --name-only ${{github.event.pull_request.base.sha}} ) -type f -iregex '.*\.\(pd\|txt\|h\|c\)$' -exec file {} + | grep CRLF; then
+            echo "some files now use CRLF as the line terminator"
+            exit 2
+          fi
 
   check_whitespace:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-    - name: use 'git diff-index' to check for whitespace errors
-        #git diff-index --check ${{github.event.pull_request.base.sha}}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: use 'git diff-index' to check for whitespace errors
+        # git diff-index --check ${{github.event.pull_request.base.sha}}
         ## some files (like .patch files or .md) have legit trailing whitespace so ignore them...
-      run: |
-        echo "SHA      :: ${GITHUB_SHA}"
-        echo "BASE_SHA :: ${{github.event.pull_request.base.sha}}"
-        echo "HEAD_SHA :: ${{github.event.pull_request.head.sha}}"
-        find . -name .git -prune -o -type f -not -iregex '.*\.\(patch\|md\|html\)' -print0 | xargs -0 git diff-index --check ${{github.event.pull_request.base.sha}} --
+        run: |
+          echo "SHA      :: ${GITHUB_SHA}"
+          echo "BASE_SHA :: ${{github.event.pull_request.base.sha}}"
+          echo "HEAD_SHA :: ${{github.event.pull_request.head.sha}}"
+          find . -name .git -prune -o -type f -not -iregex '.*\.\(patch\|md\|html\)' -print0 | xargs -0 git diff-index --check ${{github.event.pull_request.base.sha}} --

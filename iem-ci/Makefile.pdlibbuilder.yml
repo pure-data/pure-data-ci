@@ -1,3 +1,4 @@
+---
 # iem-ci configuration for testing the Makefile.pdlibbuilder itself
 
 variables:
@@ -8,11 +9,11 @@ variables:
 
 ## build snippets
 .script:make: &script_make
-    - make -C tests ${pd_extension:+extension=}${pd_extension}
+  - make -C tests ${pd_extension:+extension=}${pd_extension}
 .script:make_buildcheck: &script_make_buildcheck
-    - if make -C tests buildcheck -n ${pd_extension:+extension=}${pd_extension} >/dev/null 2>&1 ; then make -C tests check ${pd_extension:+extension=}${pd_extension}; else echo "no 'buildcheck' target...skipping"; fi
+  - if make -C tests buildcheck -n ${pd_extension:+extension=}${pd_extension} >/dev/null 2>&1 ; then make -C tests check ${pd_extension:+extension=}${pd_extension}; else echo "no 'buildcheck' target...skipping"; fi
 .script:make_installcheck: &script_make_installcheck
-    - if make -C tests installcheck -n ${pd_extension:+extension=}${pd_extension} >/dev/null 2>&1 ; then make -C tests installcheck DESTDIR=$(pwd)/tests/_installcheck ${pd_extension:+extension=}${pd_extension}; else echo "no 'installcheck' target...skipping"; fi
+  - if make -C tests installcheck -n ${pd_extension:+extension=}${pd_extension} >/dev/null 2>&1 ; then make -C tests installcheck DESTDIR=$(pwd)/tests/_installcheck ${pd_extension:+extension=}${pd_extension}; else echo "no 'installcheck' target...skipping"; fi
 
 
 #######################################################################
@@ -54,7 +55,7 @@ linux: &build_linux
 macos: &build_macos
   extends: .build:script
   tags:
-     - osx
+    - osx
   before_script:
     - wget -q -O Pd.tgz http://msp.ucsd.edu/Software/pd-${PDVERSION}.mac.tar.gz
     - rm -rf /Applications/Pd*.app/
