@@ -303,6 +303,7 @@ default:
   # and upload to apple (2023)...
   - notarize_files=""
   - test -z "${APPLE_ISSUER_ID}" || test -z "${APPLE_KEY_ID}" || test ! -e "${APPLE_KEY_FILE}" || .git-ci/notarytool/notarytool.py -v --private-keyfile "${APPLE_KEY_FILE}" --key-id "${APPLE_KEY_ID}" --issuer-id "${APPLE_ISSUER_ID}" --wait --wait-timeout ${NOTARIZE_TIMEOUT} --status-file notarization.log.json "${PKG}"
+  - cat notarization.log.json
 
 .script:staple:macos: &script_staple_macos
   - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
