@@ -304,6 +304,19 @@ default:
   - notarize_files=""
   - test -z "${APPLE_ISSUER_ID}" || test -z "${APPLE_KEY_ID}" || test ! -e "${APPLE_KEY_FILE}" || .git-ci/notarytool/notarytool.py -v --private-keyfile "${APPLE_KEY_FILE}" --key-id "${APPLE_KEY_ID}" --issuer-id "${APPLE_ISSUER_ID}" --wait --wait-timeout ${NOTARIZE_TIMEOUT} --status-file notarization.log.json "${PKG}"
 
+.script:staple:macos: &script_staple_macos
+  - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
+  - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
+  - stapled=false
+  - xcrun --find stapler
+  - xcrun stapler staple "${APP}" || stapled=true
+  - test ! ${stapled} || rm -f "${PKG}"
+  - test ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
+  - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
+  - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
+  - if diff -q "${PKG}" "${PKG_unstapled}"; then echo "removing identical unstapled files"; rm -f "${PKG_unstapled}"; fi
+  - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
+
 .notarize:macos:
   tags:
     - bigsur
@@ -313,17 +326,7 @@ default:
     - *script_codesign_macos
     - *script_notarizeprepare_macos
     - *script_notarize_macos
-    - PKG_unstapled="${PKG%.dmg}_unstapled.dmg"
-    - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
-    - stapled=false
-    - xcrun --find stapler
-    - xcrun stapler staple "${APP}" || stapled=true
-    - test ! ${stapled} || rm -f "${PKG}"
-    - test ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
-    - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
-    - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
-    - if diff -q "${PKG}" "${PKG_unstapled}"; then echo "removing identical unstapled files"; rm -f "${PKG_unstapled}"; fi
-    - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
+    - *script_staple_macos
 
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
