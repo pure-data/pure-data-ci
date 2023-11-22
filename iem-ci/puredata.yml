@@ -307,8 +307,8 @@ default:
   # get new notarize tool
   - python3 -m pip install git+https://git.iem.at/zmoelnig/notaryjerk.git
   - notaryjerk -v staple "${APP}" || stapled=true
-  - test ! ${stapled} || rm -f "${PKG}"
-  - test ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
+  - ! ${stapled} || rm -f "${PKG}"
+  - ! ${stapled} || for i in $(seq 5); do sleep 5; hdiutil create -volname "${IEM_CI_PROJECT_NAME}" -format UDZO -srcfolder "${APP}" "${PKG}" || continue; break; done
   - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
   - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
   - if diff -q "${PKG}" "${PKG_unstapled}"; then echo "removing identical unstapled files"; rm -f "${PKG_unstapled}"; fi
