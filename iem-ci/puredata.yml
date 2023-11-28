@@ -294,6 +294,7 @@ default:
 
 .script:notarize:macos: &script_notarize_macos
   # get new notarize tool
+  - python3 -m pip install --upgrade pip || true
   - python3 -m pip install git+https://git.iem.at/zmoelnig/notaryjerk.git
   # and upload to apple (2023)...
   - notarize_files=""
