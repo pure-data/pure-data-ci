@@ -80,6 +80,7 @@ default:
     # install build tools
     - which automake || brew install automake
     - which glibtool || brew install libtool
+    - which gitlab-runner || brew install gitlab-runner
 
     # install JACK
     # - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
