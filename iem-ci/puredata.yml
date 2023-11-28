@@ -346,6 +346,15 @@ w64:
     - .base
     - .build:w64
 
+Darwin2:
+  extends:
+    - Darwin
+  tags:
+    - tart
+  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
+  allow_failure: true
+
+
 # builds using the makefile buildsystem
 Linux_make:
   extends:
