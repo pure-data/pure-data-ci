@@ -75,6 +75,7 @@ default:
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
+    # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
     # install build tools
     - which automake || brew install automake
@@ -124,6 +125,9 @@ default:
       echo "detected Xcode-$XCODE_VERSION builds ${archs:-<default>} binaries"
 
   script:
+    # zsh compat
+    - set -o shwordsplit || true
+    # the actual build
     - ./autogen.sh
     - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
