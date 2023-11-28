@@ -76,6 +76,9 @@ default:
   stage: build
   before_script:
     - VERSION=$(git describe --tags || echo 0.0)
+    # install build tools
+    - which automake || brew install automake
+    - which libtool || brew install libtool
 
     # install JACK
     # - HOMEBREW_NO_AUTO_UPDATE=1 brew install jack || true
