@@ -342,10 +342,18 @@ Linux:
   extends:
     - .base
     - .build:linux
-Darwin:
+# old macOS runners
+.Darwin:
   extends:
     - .base
     - .build:macos
+# new macOS runners
+Darwin:
+  extends:
+    - .Darwin
+  tags:
+    - tart
+  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
 w32:
   extends:
     - .base
@@ -354,14 +362,6 @@ w64:
   extends:
     - .base
     - .build:w64
-
-Darwin2:
-  extends:
-    - Darwin
-  tags:
-    - tart
-  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
-  allow_failure: true
 
 
 # builds using the makefile buildsystem
