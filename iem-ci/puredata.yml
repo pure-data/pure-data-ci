@@ -353,7 +353,7 @@ Darwin:
     - .Darwin
   tags:
     - tart
-  image: ghcr.io/cirruslabs/macos-monterey-xcode:latest
+  image: registry.git.iem.at/devtools/docker/tart/macos-monterey-xcode:latest
 w32:
   extends:
     - .base
