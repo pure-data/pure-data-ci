@@ -44,6 +44,12 @@ default:
     - *rules_base
     - when: never
 
+.base:macos:
+  tags:
+    - tart
+  image: registry.git.iem.at/devtools/docker/tart/macos-monterey-xcode:latest
+
+
 .build2:
   stage: build:secondary
   dependencies: []
@@ -66,8 +72,8 @@ default:
     - make install DESTDIR=$(pwd)/
 
 .build:macos: &build_macos
-  tags:
-    - bigsur
+  extends:
+    - .base:macos
   variables:
     # TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.13
@@ -126,8 +132,6 @@ default:
       echo "detected Xcode-$XCODE_VERSION builds ${archs:-<default>} binaries"
 
   script:
-    # zsh compat
-    - set -o shwordsplit || true
     # the actual build
     - ./autogen.sh
     - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
@@ -351,9 +355,6 @@ Linux:
 Darwin:
   extends:
     - .Darwin
-  tags:
-    - tart
-  image: registry.git.iem.at/devtools/docker/tart/macos-monterey-xcode:latest
 w32:
   extends:
     - .base
