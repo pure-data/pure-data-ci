@@ -67,6 +67,7 @@ jobs:
         env:
           CC: ${{ steps.compiler.outputs.CC }}
           PD: ${{ steps.pd.outputs.PD }}
+          MSYS2_ARG_CONV_EXCL: /.github;PDLIBDIR=
         run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: DLL dependencies
