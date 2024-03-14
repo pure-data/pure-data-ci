@@ -39,10 +39,12 @@ jobs:
           install: >-
             mingw-w64-x86_64-ntldd-git
       - name: Find usable compiler
+        id: compiler
         run: |
-          for cc in cc gcc clang; do echo "test $cc"; "${cc}" -dumpmachine && export CC=${CC:-$cc} && break || true; done
-          echo "CC ${CC}"
+          for cc in cc gcc clang; do echo "testing compiler $cc"; "${cc}" -dumpmachine && export CC=${CC:-$cc} || true; done
+          echo "CC=${CC}" | tee "$GITHUB_OUTPUT"
       - name: Install Pd
+        id: pd
         run: |
           wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
           rm -rf "${PROGRAMFILES}/pd" && mkdir -p "${PROGRAMFILES}/pd"
@@ -50,20 +52,22 @@ jobs:
           mv -v "${PROGRAMFILES}/pd"/*/* "${PROGRAMFILES}/pd"
           rm -f Pd.zip
           export PD="${PROGRAMFILES}/pd/bin/pd.com"
+          echo "PD=${PD}" | tee "$GITHUB_OUTPUT"
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
           submodules: true
-      - name: Export variables
-        run: |
-          echo "PD ${PD}"
-          export PD
-          echo "CC ${CC}"
-          export CC
+
       - name: Build
+        env:
+          CC: ${{ steps.compiler.outputs.CC }}
+          PD: ${{ steps.pd.outputs.PD }}
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra CC=gcc
+        env:
+          CC: ${{ steps.compiler.outputs.CC }}
+          PD: ${{ steps.pd.outputs.PD }}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: DLL dependencies
         run: |
