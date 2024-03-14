@@ -40,8 +40,13 @@ jobs:
             mingw-w64-x86_64-ntldd-git
       - name: test compiler
           run: |
-            (which cc; echo; cc --version; echo; cc -dumpmachine) || true
-            (which gcc; gcc --version; gcc -dumpmachine) || true
+            which cc || true
+            cc --version || true
+            cc -dumpmachine || true
+            echo '========================='
+            which gcc || true
+            gcc --version || true
+            gcc -dumpmachine || true
       - name: Install Pd
         run: |
           wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
