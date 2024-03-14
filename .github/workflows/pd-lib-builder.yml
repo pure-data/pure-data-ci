@@ -38,15 +38,10 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-x86_64-ntldd-git
-      - name: test compiler
+      - name: Find usable compiler
         run: |
-          which cc || true
-          cc --version || true
-          cc -dumpmachine || true
-          echo '========================='
-          which gcc || true
-          gcc --version || true
-          gcc -dumpmachine || true
+          for cc in cc gcc clang; do echo "test $cc"; "${cc}" -dumpmachine && export CC=${CC:-$cc} && break || true; done
+          echo "CC ${CC}"
       - name: Install Pd
         run: |
           wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
@@ -59,10 +54,16 @@ jobs:
         uses: actions/checkout@v2
         with:
           submodules: true
+      - name: Export variables
+        run: |
+          echo "PD ${PD}"
+          export PD
+          echo "CC ${CC}"
+          export CC
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra CC=gcc
 
       - name: DLL dependencies
         run: |
