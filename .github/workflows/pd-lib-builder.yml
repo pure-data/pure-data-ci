@@ -38,6 +38,10 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-x86_64-ntldd-git
+      - name: test compiler
+          run: |
+            (which cc; echo; cc --version; echo; cc -dumpmachine) || true
+            (which gcc; gcc --version; gcc -dumpmachine) || true
       - name: Install Pd
         run: |
           wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
