@@ -364,6 +364,14 @@ w64:
     - .base
     - .build:w64
 
+w64@libvirt:
+  extends:
+    - w64
+  tags:
+    - libvirt
+  image: win10
+  allow_failure: true
+
 
 # builds using the makefile buildsystem
 Linux_make:
