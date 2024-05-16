@@ -209,6 +209,9 @@ default:
 
 .build:w32make:
   extends: .build:w32
+  tags:
+    - libvirt
+  image: win10
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
@@ -217,6 +220,9 @@ default:
 
 .build:w64make:
   extends: .build:w64
+  tags:
+    - libvirt
+  image: win10
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
@@ -364,15 +370,6 @@ w64:
     - .base
     - .build:w64
 
-w64@libvirt:
-  extends:
-    - w64
-  tags:
-    - libvirt
-  image: win10
-  allow_failure: true
-
-
 # builds using the makefile buildsystem
 Linux_make:
   extends:
@@ -426,10 +423,16 @@ w32_pd64:
   extends:
     - w32
     - .double
+  tags:
+    - libvirt
+  image: win10
 w64_pd64:
   extends:
     - w64
     - .double
+  tags:
+    - libvirt
+  image: win10
 
 # libpd builds
 Linux_libpd:
@@ -449,6 +452,9 @@ w64_libpd:
   extends:
     - w64
     - .build2
+  tags:
+    - libvirt
+  image: win10
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
 
