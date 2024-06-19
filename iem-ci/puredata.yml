@@ -212,10 +212,8 @@ default:
     - make -C src -f makefile.mac MACOSX_DEPLOYMENT_TARGET=10.6 ARCH="" EXTRAARCH="" prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
 
 .build:w32make:
-  extends: .build:w32
-  tags:
-    - libvirt:windows
-  image: windows:latest
+  extends:
+    - .build:w32
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
@@ -223,10 +221,8 @@ default:
     - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
 .build:w64make:
-  extends: .build:w64
-  tags:
-    - libvirt:windows
-  image: windows:latest
+  extends:
+    - .build:w64
   script:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ install
@@ -427,16 +423,10 @@ w32_pd64:
   extends:
     - w32
     - .double
-  tags:
-    - libvirt:windows
-  image: windows:latest
 w64_pd64:
   extends:
     - w64
     - .double
-  tags:
-    - libvirt:windows
-  image: windows:latest
 
 # libpd builds
 Linux_libpd:
@@ -456,9 +446,6 @@ w64_libpd:
   extends:
     - w64
     - .build2
-  tags:
-    - libvirt:windows
-  image: windows:latest
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
 
