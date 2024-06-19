@@ -51,7 +51,8 @@ default:
 
 .image:windows:
   tags:
-    - windows
+    - sardinecake
+  image: registry.git.iem.at/devtools/sardinecake/windows:latest
 
 .build2:
   stage: build:secondary
