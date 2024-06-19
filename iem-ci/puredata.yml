@@ -44,11 +44,14 @@ default:
     - *rules_base
     - when: never
 
-.base:macos:
+.image:macos:
   tags:
     - tart
   image: registry.git.iem.at/devtools/docker/tart/macos-monterey-xcode:latest
 
+.image:windows:
+  tags:
+    - windows
 
 .build2:
   stage: build:secondary
@@ -73,7 +76,7 @@ default:
 
 .build:macos: &build_macos
   extends:
-    - .base:macos
+    - .image:macos
   variables:
     # TCLTK_VERSION: ''
     TCLTK_VERSION: 8.6.13
@@ -144,8 +147,8 @@ default:
 
 .build:win:
   stage: build
-  tags:
-    - windows
+  extends:
+    - .image:windows
   variables:
     IEMCI_CONFIGURATIONS: mingw64 python2
   before_script:
