@@ -18,6 +18,7 @@ variables:
   IEM_CI_JOBS:
     value: ""
     description: "space-separated list of jobs to run (leave empty to select ALL jobs)"
+  IEM_CI_PACKAGE_REGISTRY: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic"
 
 default:
   retry:
