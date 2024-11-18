@@ -230,6 +230,21 @@ default:
     - make -C src -f makefile.mingw prefix="/Pd-${VERSION}" DESTDIR=$(pwd)/ clean
     - find Pd-*.*/ "(" -name "*.com" -o -name "*.exe" -o -name "*.dll" ")" -exec msw/localdeps.sh {} + || true
 
+.script:libpdmake:build: &script_libpdmake_build
+  - make -C libpd
+  - make -C libpd/test_libpd
+.script:libpdmake:test: &script_libpdmake_test
+  - cd libpd/test_libpd
+  - LD_LIBRARY_PATH="$(cd ..; pwd)${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" ./test_libpd
+  - cd -
+.buildtest:libpdmake:
+  stage: test
+  dependencies: []
+  needs: []
+  script:
+    - *script_libpdmake_build
+    - *script_libpdmake_test
+
 .script:keychain:macos: &script_keychain_macos
   - |
     # activate the certificate chain
@@ -449,6 +464,21 @@ w64_libpd:
     - .build2
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
+
+Linux_libpd_make:
+  extends:
+    - .build:linux
+    - .buildtest:libpdmake
+
+Darwin_libpd_make:
+  extends:
+    - .build:macos
+    - .buildtest:libpdmake
+
+w64_libpd_make:
+  extends:
+    - .build:w64
+    - .buildtest:libpdmake
 
 ## packages
 deken:
