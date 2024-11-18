@@ -246,6 +246,20 @@ jobs:
 #          cd src
 #          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
 
+  makefile_libpd:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        run: |
+          make -C libpd
+          make -C libpd/test_libpd
+      - name: Test
+        run: |
+          cd libpd/test_libpd
+          LD_LIBRARY_PATH="$(cd ..; pwd)${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" ./test_libpd
+          cd -
 
 ################################################################
 ## code linters: check permissions and whitespace
