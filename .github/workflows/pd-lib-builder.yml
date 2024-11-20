@@ -20,7 +20,7 @@ jobs:
         run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Upload Ubuntu artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: ubuntu-externals
           path: .github/extra/*
@@ -75,7 +75,7 @@ jobs:
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find .github/extra -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
       - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: windows-externals
           path: .github/extra/*
@@ -102,7 +102,7 @@ jobs:
           test -e .git-ci/localdeps.macos.sh || (wget -q -O .git-ci/localdeps.macos.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.macos.sh" && chmod +x .git-ci/localdeps.macos.sh) || true
           if [ -x .git-ci/localdeps.macos.sh ]; then find .github/extra -type f "(" -name "*.${pd_extension:-pd_*}" -o -name "*.so" -o -name "*.d_*" ")" -exec .git-ci/localdeps.macos.sh {} +; fi
       - name: Upload macOS artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: macos-externals
           path: .github/extra/*
