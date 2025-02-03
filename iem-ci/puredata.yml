@@ -244,6 +244,9 @@ default:
   script:
     - *script_libpdmake_build
     - *script_libpdmake_test
+  rules:
+    - *rules_base
+    - when: never
 
 .script:keychain:macos: &script_keychain_macos
   - |
