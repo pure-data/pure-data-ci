@@ -346,7 +346,7 @@ default:
   - test -z "${KEEP_UNSTAPLED}" || test ! -e "${PKG}" || mv "${PKG}" "${PKG_unstapled}"
   - test "${skip_notarization}" != "true" || skip_stapling=true
   - echo "notarizing ${skip_notarization} ... stapling ${skip_stapling}"
-  - test "${skip_stapling}" = "true" && stapled=false || stapled=false
+  - test "${skip_stapling}" = "true" && stapled=false || stapled=true
   - echo "stapling ${skip_stapling}...${stapled}"
   # get new notarize tool
   - test "${skip_stapling}" = "true" || python3 -m pip install git+https://git.iem.at/zmoelnig/notaryjerk.git
