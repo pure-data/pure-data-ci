@@ -50,6 +50,10 @@ default:
     - tart
   image: registry.git.iem.at/devtools/docker/tart/macos-monterey-xcode:latest
 
+.image:osx:
+  tags:
+    - bigsur
+
 .image:windows:
   tags:
     - sardinecake
@@ -360,8 +364,8 @@ default:
   - test -n "${KEEP_UNSTAPLED}" || rm -rf notari*
 
 .notarize:macos:
-  tags:
-    - bigsur
+  extends:
+    - .image:macos
   stage: deploy
   script:
     - *script_keychain_macos
@@ -508,8 +512,6 @@ deken:
     - test -z "${DEKEN_USERNAME}" || test -z "${DEKEN_PASSWORD}" || deken upload --no-source-error ./*.dek
 
 macOS:
-  tags:
-    - osx
   allow_failure: true
   stage: deploy
   extends:
