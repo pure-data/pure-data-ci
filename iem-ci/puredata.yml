@@ -270,13 +270,12 @@ default:
   - security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k "${keychainpass}" build.keychain >/dev/null
   - security find-identity -v
   - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
-
 .script:codesign:macos: &script_codesign_macos
   - |
     # sign the Pd.app
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
   - PKG_unsigned="${APP%.app}_unsigned.dmg"
-  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZ0 -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG_unsigned}" || continue; break; done
+  - test -z "${KEEP_UNSIGNED}" || test ! -e "${APP}" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZO -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG_unsigned}" || continue; break; done
   - echo "CODESIGNFLAGS ${CODESIGNFLAGS}"
   - codesignflags=${CODESIGNFLAGS:---timestamp --force --entitlements mac/stuff/pd.entitlements}
   - codesignflags="${codesignflags} --sign ${sign_id}"
@@ -297,7 +296,7 @@ default:
   # try to switch to the latest and greatest XCode, so we get 'altool' and 'stapler'
   - sudo xcode-select --switch $(for d in /Applications/Xcode*.app/Contents/Info.plist ; do echo $(defaults read ${d%.plist} CFBundleShortVersionString) ${d%/Contents/Info.plist}; done | sort -t. -k1,1n -k2,2n -k3,3n | tail -1 | sed -e 's/^[^ ]* //' ) || true
   # stuff everything into a disk image
-  - test "${PKG}" = "${PKG%.dmg}" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZ0 -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG}" || continue; break; done
+  - test "${PKG}" = "${PKG%.dmg}" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZO -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG}" || continue; break; done
   - test -e "${PKG}"
   # or a ZIP-file , if you really want
   - test "${PKG}" = "${PKG%.zip}" || zip -r -y "${PKG}" "${IEM_CI_PKGLIBDIR:-${IEM_CI_PROJECT_NAME}}"
@@ -359,7 +358,7 @@ default:
   - test "${skip_stapling}" = "true" || notaryjerk -v staple "${APP}" || stapled=false
   - echo "stapled ${stapled}"
   - test "${stapled}" != "true" || rm -f "${PKG}"
-  - test "${stapled}" != "true" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZ0 -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG}" || continue; break; done
+  - test "${stapled}" != "true" || for i in $(seq 5); do sleep 5; hdiutil create -format UDZO -fs HFS+ -volname "${IEM_CI_PROJECT_NAME}" -srcfolder "${APP}" "${PKG}" || continue; break; done
   - test -e "${PKG}" || mv "${PKG_unstabled}" "${PKG}"
   - if diff -q "${PKG}" "${PKG_unsigned}"; then echo "removing identical unsigned files"; rm -f "${PKG_unsigned}"; fi
   - if diff -q "${PKG}" "${PKG_unstapled}"; then echo "removing identical unstapled files"; rm -f "${PKG_unstapled}"; fi
