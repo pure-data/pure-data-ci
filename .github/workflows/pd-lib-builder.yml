@@ -57,7 +57,7 @@ jobs:
         id: compiler
         run: |
           for cc in cc gcc clang; do echo "testing compiler $cc"; "${cc}" -dumpmachine && export CC=${CC:-$cc} || true; done
-          echo "CC=${CC}" | tee "${GITHUB_OUTPUT"}
+          echo "CC=${CC}" | tee "${GITHUB_OUTPUT}"
       - name: Install Pd
         id: pd
         run: |
@@ -67,7 +67,7 @@ jobs:
           mv -v "${PROGRAMFILES}/pd"/*/* "${PROGRAMFILES}/pd"
           rm -f Pd.zip
           export PD="${PROGRAMFILES}/pd/bin/pd.com"
-          echo "PD=${PD}" | tee "${GITHUB_OUTPUT"}
+          echo "PD=${PD}" | tee "${GITHUB_OUTPUT}"
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
