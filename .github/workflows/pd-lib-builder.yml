@@ -1,12 +1,13 @@
 ---
 name: build a pd-lib-builder based external
 
-on: workflow_call
-  inputs:
-    pd-version:
-      required: true
-      type: string
-      default: "0.51-3"
+on:
+  workflow_call:
+    inputs:
+      pd-version:
+        required: true
+        type: string
+        default: "0.51-3"
 
 jobs:
 
