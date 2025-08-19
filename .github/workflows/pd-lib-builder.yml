@@ -22,7 +22,7 @@ jobs:
           mkdir /tmp/pd
           curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
           export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
-          echo "PDINCLUDEDIR=${PDINCLUDEDIR}"
+          echo "PDINCLUDEDIR=${PDINCLUDEDIR} | tee "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -30,7 +30,9 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra PDINCLUDEDIR="${PDINCLUDEDIR}"
+        env:
+          PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Upload Ubuntu artifacts
         uses: actions/upload-artifact@v4
@@ -55,7 +57,7 @@ jobs:
         id: compiler
         run: |
           for cc in cc gcc clang; do echo "testing compiler $cc"; "${cc}" -dumpmachine && export CC=${CC:-$cc} || true; done
-          echo "CC=${CC}" | tee "$GITHUB_OUTPUT"
+          echo "CC=${CC}" | tee "${GITHUB_OUTPUT"}
       - name: Install Pd
         id: pd
         run: |
@@ -65,7 +67,7 @@ jobs:
           mv -v "${PROGRAMFILES}/pd"/*/* "${PROGRAMFILES}/pd"
           rm -f Pd.zip
           export PD="${PROGRAMFILES}/pd/bin/pd.com"
-          echo "PD=${PD}" | tee "$GITHUB_OUTPUT"
+          echo "PD=${PD}" | tee "${GITHUB_OUTPUT"}
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
@@ -106,6 +108,7 @@ jobs:
           mkdir /tmp/pd
           curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
           export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
+          echo "PDINCLUDEDIR=${PDINCLUDEDIR} | tee "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -115,7 +118,9 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra PDINCLUDEDIR="${PDINCLUDEDIR}"
+        env:
+          PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Dylib dependencies
         run: |
