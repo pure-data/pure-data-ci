@@ -2,14 +2,25 @@
 name: build a pd-lib-builder based external
 
 on: workflow_call
+  inputs:
+    pd-version:
+      required: true
+      type: string
+      default: "0.51-3"
 
 jobs:
 
   Ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - name: Install dependencies
-        run: sudo apt update && sudo apt install puredata-dev
+#      - name: Install dependencies
+#        run: sudo apt update && sudo apt install puredata-dev
+      - name: Install Pd
+        id: pd
+        run: |
+          mkdir /tmp/pd
+          curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
+          export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -46,7 +57,7 @@ jobs:
       - name: Install Pd
         id: pd
         run: |
-          wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-0.51-3.msw.zip
+          wget -q -O Pd.zip http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.msw.zip
           rm -rf "${PROGRAMFILES}/pd" && mkdir -p "${PROGRAMFILES}/pd"
           unzip -q Pd.zip -d "${PROGRAMFILES}/pd"
           mv -v "${PROGRAMFILES}/pd"/*/* "${PROGRAMFILES}/pd"
@@ -85,8 +96,15 @@ jobs:
     env:
       cflags: -mmacosx-version-min=10.9
     steps:
-      - name: Install macOS packages
-        run: brew install --cask pd
+#      - name: Install macOS packages
+#        run: brew install --cask pd
+      - name: Install Pd
+        id: pd
+        run: |
+          mkdir /tmp/pd
+          curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
+          export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
+
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
