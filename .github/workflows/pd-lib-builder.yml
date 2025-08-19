@@ -123,7 +123,7 @@ jobs:
         run: |
           echo "PDINCLUDEDIR=$PDINCLUDEDIR"
           echo "pdincludedir=${{ steps.pd.outputs.PDINCLUDEDIR }}"
-          make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+          #make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Dylib dependencies
         run: |
