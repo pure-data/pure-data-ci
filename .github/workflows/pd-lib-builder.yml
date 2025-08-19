@@ -22,6 +22,7 @@ jobs:
           mkdir /tmp/pd
           curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
           export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
+          echo "PDINCLUDEDIR=${PDINCLUDEDIR}"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -29,7 +30,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra PDINCLUDEDIR="${PDINCLUDEDIR}"
 
       - name: Upload Ubuntu artifacts
         uses: actions/upload-artifact@v4
@@ -114,7 +115,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra PDINCLUDEDIR="${PDINCLUDEDIR}"
 
       - name: Dylib dependencies
         run: |
