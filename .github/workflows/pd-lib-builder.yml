@@ -120,7 +120,10 @@ jobs:
       - name: Install
         env:
           PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
-        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+        run: |
+          echo "PDINCLUDEDIR=$PDINCLUDEDIR"
+          echo "pdincludedir=${{ steps.pd.outputs.PDINCLUDEDIR }}"
+          make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Dylib dependencies
         run: |
