@@ -28,6 +28,8 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build
+        env:
+          PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
         run: make
       - name: Install
         env:
@@ -116,14 +118,13 @@ jobs:
           submodules: true
 
       - name: Build
+        env:
+          PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
         run: make
       - name: Install
         env:
           PDINCLUDEDIR: ${{ steps.pd.outputs.PDINCLUDEDIR }}
-        run: |
-          echo "PDINCLUDEDIR=$PDINCLUDEDIR"
-          echo "pdincludedir=${{ steps.pd.outputs.PDINCLUDEDIR }}"
-          #make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
+        run: make install DESTDIR=$(pwd) PDLIBDIR=/.github/extra
 
       - name: Dylib dependencies
         run: |
