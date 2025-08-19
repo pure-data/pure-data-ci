@@ -5,7 +5,7 @@ on:
   workflow_call:
     inputs:
       pd-version:
-        required: true
+        description: "the Pd-version to build against (e.g. '0.53-1'"
         type: string
         default: "0.51-3"
 
