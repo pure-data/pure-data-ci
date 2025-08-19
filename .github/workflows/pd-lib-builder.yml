@@ -22,7 +22,7 @@ jobs:
           mkdir /tmp/pd
           curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
           export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
-          echo "PDINCLUDEDIR=${PDINCLUDEDIR} | tee "${GITHUB_OUTPUT}"
+          echo "PDINCLUDEDIR=${PDINCLUDEDIR}" | tee "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
         uses: actions/checkout@v2
@@ -108,7 +108,7 @@ jobs:
           mkdir /tmp/pd
           curl http://msp.ucsd.edu/Software/pd-${{ inputs.pd-version }}.src.tar.gz | tar -C /tmp/pd -xvzf -
           export PDINCLUDEDIR="$(find /tmp/pd -name m_pd.h -print -quit | sed -e 's|m_pd.h$||')"
-          echo "PDINCLUDEDIR=${PDINCLUDEDIR} | tee "${GITHUB_OUTPUT}"
+          echo "PDINCLUDEDIR=${PDINCLUDEDIR}" | tee "${GITHUB_OUTPUT}"
 
       - name: Checkout Code
         uses: actions/checkout@v2
