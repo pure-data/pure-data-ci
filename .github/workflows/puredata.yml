@@ -47,8 +47,8 @@ jobs:
         msystem:
           - mingw32
           - mingw64
-          - ucrt64
-          - clang64
+          # - ucrt64
+          # - clang64
           - clangarm64
         include:
           - msystem: clangarm64
