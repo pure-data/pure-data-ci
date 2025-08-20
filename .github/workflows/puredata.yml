@@ -95,17 +95,17 @@ jobs:
       - name: Install
         run: |
           make app VERSION="${{ steps.ghd.outputs.describe }}"
-          find Pd*-* -iname "*.exe" -exec file {} +
+          find pd*-* -iname "*.exe" -exec file {} +
       - name: DLL dependencies
         run: |
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
-          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} + || true; fi
+          if [ -x .git-ci/localdeps.win.sh ]; then find pd*-* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} + || true; fi
       - name: Upload artifacts
         if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ matrix.msystem }}-float${{ matrix.float }}
-          path: Pd*-*
+          path: pd*-*
 
   Darwin:
     runs-on: macos-latest
