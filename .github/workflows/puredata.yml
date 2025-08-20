@@ -76,11 +76,12 @@ jobs:
           pacboy: >-
             wget:
             unzip:
+            base-devel:
             autoconf:
             automake:
             libtool:p
+            toolchain:p
             ntldd:p
-          path-type: inherit
       - name: Checkout code
         uses: actions/checkout@v2
       - name: ASIOSDK
