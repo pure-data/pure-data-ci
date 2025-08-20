@@ -34,7 +34,6 @@ jobs:
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: Upload artifacts
-        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: linux-float${{ matrix.float }}
@@ -102,7 +101,6 @@ jobs:
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find pd*-* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -print -exec .git-ci/localdeps.win.sh {} + || true; fi
       - name: Upload artifacts
-        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: windows-${{ matrix.msystem }}-float${{ matrix.float }}
@@ -139,7 +137,6 @@ jobs:
       - name: Install
         run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" "${{ steps.ghd.outputs.describe }}"
       - name: Upload artifacts
-        if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
           name: darwin-float${{ matrix.float }}
