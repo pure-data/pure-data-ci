@@ -78,10 +78,8 @@ jobs:
           rm -f asiosdk.zip
       - name: Configure
         run: |
-          ls -la asio || true
           ./autogen.sh
           ./configure --with-floatsize="${FLOATSIZE}" --prefix="/Pd${FLOATSIZE}-${{ steps.ghd.outputs.describe }}"
-          cat -n doc/Makefile || true
           echo $PWD
           pwd || true
           pwd -L || true
