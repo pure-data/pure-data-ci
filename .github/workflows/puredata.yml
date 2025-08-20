@@ -83,6 +83,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
+        if: ${{ false }}
         run: make app
       - name: DLL dependencies
         if: ${{ false }}
