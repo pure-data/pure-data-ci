@@ -107,6 +107,9 @@ jobs:
       FLOATSIZE: ${{ matrix.float }}
       TCLTK: 8.6.12
     steps:
+      - name: Git describe
+        id: ghd
+        uses: proudust/gh-describe@v2
       - name: Install dependencies
         run: |
           brew install jack automake autoconf gettext libtool
@@ -123,7 +126,7 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: make app
+        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" "${{ steps.ghd.outputs.describe }}"
       - name: Upload artifacts
         if: ${{ false }}
         uses: actions/upload-artifact@v4
