@@ -251,7 +251,7 @@ jobs:
 #          cd src
 #          nmake /f makefile.msvc AFLAGS="${env:AFLAGS} /DHAVE_STRUCT_TIMESPEC=1"
 
-  makefile_libpd:
+  libpd_make:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
