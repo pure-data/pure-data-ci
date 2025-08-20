@@ -28,9 +28,7 @@ jobs:
       - name: Configure
         run: |
           ./autogen.sh
-          floatname=""
-          test "${FLOATSIZE}" = 32 || floatname="${FLOATSIZE}"
-          ./configure --enable-alsa --enable-jack --with-floatsize=${FLOATSIZE} --prefix="/Pd${FLOATSIZE}-${{ steps.ghd.outputs.describe }}"
+          ./configure --enable-alsa --enable-jack --with-floatsize="${FLOATSIZE}" --prefix="/Pd${FLOATSIZE}-${{ steps.ghd.outputs.describe }}"
       - name: Build
         run: make
       - name: Install
@@ -39,7 +37,7 @@ jobs:
         if: ${{ false }}
         uses: actions/upload-artifact@v4
         with:
-          name: linux-amd64-float${{ matrix.float }}
+          name: linux-float${{ matrix.float }}
           path: Pd*-*
 
 #  MinGW-amd64:
