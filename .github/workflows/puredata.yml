@@ -61,11 +61,11 @@ jobs:
           msystem: mingw64
           release: false
           pacboy: >-
-            wget
-            unzip
-            autoconf
-            automake
-            libtool
+            wget:
+            unzip:
+            autoconf:
+            automake:
+            libtool:p
             ntldd:p
           # path-type: inherit
       - name: Checkout code
