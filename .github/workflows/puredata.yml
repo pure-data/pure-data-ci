@@ -45,20 +45,16 @@ jobs:
       fail-fast: false
       matrix:
         float: [32]
-        msystem: [UCRT64, MINGW32, MINGW64, CLANG64, CLANGARM64]
+        msystem:
+          - UCRT64
+          - MINGW32
+          - MINGW64
+          - CLANG64
+          - CLANGARM64
         include:
-          # the extra 'msys' msystem runs once (only!), but without a 'float'
-          - msystem: UCRT64
-            runner: windows-latest
-          - msystem: MINGW64
-            runner: windows-latest
-          - msystem: MINGW32
-            runner: windows-latest
-          - msystem: CLANG64
-            runner: windows-latest
           - msystem: CLANGARM64
             runner: windows-11-arm
-    runs-on: ${{ matrix.runner }}
+    runs-on: ${{ matrix.runner || 'windows-latest' }}
     defaults:
       run:
         shell: msys2 {0}
