@@ -93,8 +93,9 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        if: ${{ false }}
-        run: make app
+        run: |
+          make app || true
+          find . -iname "*.exe" -exec file {} + || true
       - name: DLL dependencies
         if: ${{ false }}
         run: |
