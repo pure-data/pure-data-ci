@@ -4,15 +4,15 @@ name: Build Pure Data in various flavours...
 on: workflow_call
 
 jobs:
-###############################################################
-# autotools builds on various platforms
-###############################################################
+  ###############################################################
+  # autotools builds on various platforms
+  ###############################################################
   Linux:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-         float: [32, 64]
+        float: [32, 64]
     env:
       FLOATSIZE: ${{ matrix.float }}
     steps:
@@ -48,7 +48,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         float: [32]
+        float: [32]
     env:
       FLOATSIZE: ${{ matrix.float }}
     steps:
@@ -97,7 +97,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-         float: [32]
+        float: [32]
     env:
       FLOATSIZE: ${{ matrix.float }}
       TCLTK: 8.6.12
@@ -107,10 +107,10 @@ jobs:
           brew install jack automake autoconf gettext libtool
       - name: Checkout code
         uses: actions/checkout@v2
-#      - name: Build Tcl/Tk
-#        if: ${{ env.TCLTK != '' }}
-#        run: |
-#          mac/tcltk-wish.sh "${TCLTK}"
+      # - name: Build Tcl/Tk
+      #   if: ${{ env.TCLTK != '' }}
+      #   run: |
+      #     mac/tcltk-wish.sh "${TCLTK}"
       - name: Configure
         run: |
           ./autogen.sh
@@ -126,9 +126,9 @@ jobs:
           name: darwin-float${{ matrix.float }}
           path: Pd*.app
 
-################################################################
-## basic builds
-################################################################
+  ################################################################
+  ## basic builds
+  ################################################################
   dist-check:
     runs-on: ubuntu-latest
     steps:
@@ -162,9 +162,9 @@ jobs:
         run: make
 
 
-################################################################
-## legacy makefiles
-################################################################
+  ################################################################
+  ## legacy makefiles
+  ################################################################
   Linux_make:
     runs-on: ubuntu-latest
     steps:
