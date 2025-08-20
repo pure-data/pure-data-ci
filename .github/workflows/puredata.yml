@@ -80,13 +80,6 @@ jobs:
         run: |
           ./autogen.sh
           ./configure --with-floatsize="${FLOATSIZE}" --prefix="/Pd${FLOATSIZE}-${{ steps.ghd.outputs.describe }}"
-          echo $PWD
-          pwd || true
-          pwd -L || true
-          pwd -W || true
-          pwd -P || true
-          cygpath "$(pwd)" || true
-          cygpath -u "$(pwd)" || true
       - name: Build
         run: make
       - name: Install
