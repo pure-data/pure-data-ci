@@ -40,47 +40,58 @@ jobs:
           name: linux-float${{ matrix.float }}
           path: Pd*-*
 
-#  MinGW-amd64:
-#    runs-on: windows-latest
-#    defaults:
-#      run:
-#        shell: msys2 {0}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#         float: [32]
-#    env:
-#      FLOATSIZE: ${{ matrix.float }}
-#    steps:
-#      - name: Install MSYS2
-#        uses: msys2/setup-msys2@v2
-#        with:
-#          release: false
-#          path-type: inherit
-#          install: >-
-#            mingw-w64-x86_64-ntldd-git
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#      - name: Configure
-#        run: |
-#          ./autogen.sh
-#          ./configure --prefix="/Pd64-float${FLOATSIZE}" CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-#      - name: Build
-#        run: make
-#      - name: Install
-#        run: make install DESTDIR=$(pwd)
-#      - name: DLL dependencies
-#        if: ${{ false }}
-#        run: |
-#          test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
-#          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
-#      - name: Upload artifacts
-#        if: ${{ false }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: mingw-amd64-float${{ matrix.float }}
-#          path: Pd*-float*
-#
+  Windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    strategy:
+      fail-fast: false
+      matrix:
+         float: [32]
+    env:
+      FLOATSIZE: ${{ matrix.float }}
+    steps:
+      - name: Git describe
+        id: ghd
+        uses: proudust/gh-describe@v2
+      - name: Install MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          release: false
+          path-type: inherit
+          install: >-
+            mingw-w64-x86_64-ntldd-git
+      - name: Install utils
+        run: |
+           pacman.exe -S --noconfirm --noprogressbar wget unzip
+      - name: ASIOSDK
+        run: |
+          wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
+          unzip -q asiosdk.zip -d asio
+          i=0; for f in asio/*/; do test -d "${f}" || break; echo "${f}"; until mv -v "${f%/}" asio/ASIOSDK; do echo "trying $i"; sleep 1; i=$((i+1)); if [ $i -ge 10 ]; then echo "giving up"; break; fi; done; done
+          rm -f asiosdk.zip
+      - name: Configure
+        run: |
+          ls -la asio || true
+          ./autogen.sh
+          ./configure --with-floatsize="${FLOATSIZE}" --prefix="/Pd${FLOATSIZE}-${{ steps.ghd.outputs.describe }}"
+      - name: Build
+        run: make
+      - name: Install
+        run: make install DESTDIR=$(pwd)
+      - name: DLL dependencies
+        if: ${{ false }}
+        run: |
+          test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
+          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
+      - name: Upload artifacts
+        if: ${{ false }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-float${{ matrix.float }}
+          path: Pd*-*
+
 #  macOS-amd64:
 #    runs-on: macos-latest
 #    strategy:
