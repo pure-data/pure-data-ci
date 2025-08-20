@@ -98,6 +98,7 @@ jobs:
           find pd*-* -iname "*.exe" -exec file {} +
       - name: DLL dependencies
         run: |
+          mkdir -p .git-ci
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find pd*-* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -print -exec .git-ci/localdeps.win.sh {} + || true; fi
       - name: Upload artifacts
