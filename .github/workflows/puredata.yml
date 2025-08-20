@@ -37,9 +37,9 @@ jobs:
         run: make install DESTDIR=$(pwd)
       - name: Upload artifacts
         if: ${{ false }}
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: linux-amd64
+          name: linux-amd64-float${{ matrix.float }}
           path: Pd*-*
 
 #  MinGW-amd64:
@@ -78,9 +78,9 @@ jobs:
 #          if [ -x .git-ci/localdeps.win.sh ]; then find Pd*-float* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -exec .git-ci/localdeps.win.sh {} +; fi
 #      - name: Upload artifacts
 #        if: ${{ false }}
-#        uses: actions/upload-artifact@v2
+#        uses: actions/upload-artifact@v4
 #        with:
-#          name: mingw-amd64
+#          name: mingw-amd64-float${{ matrix.float }}
 #          path: Pd*-float*
 #
 #  macOS-amd64:
@@ -114,9 +114,9 @@ jobs:
 #        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
 #      - name: Upload artifacts
 #        if: ${{ false }}
-#        uses: actions/upload-artifact@v2
+#        uses: actions/upload-artifact@v4
 #        with:
-#          name: macos-amd64
+#          name: macos-amd64-float${{ matrix.float }}
 #          path: Pd*-float*
 
 ################################################################
