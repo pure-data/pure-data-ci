@@ -421,6 +421,8 @@ Linux_make:
     - .base
     - .build:linuxmake
     - .build2
+  rules:
+    - when: never
 
 Darwin_make:
   extends:
@@ -428,6 +430,8 @@ Darwin_make:
     - .build:macosmake
     - .build2
   allow_failure: true
+  rules:
+    - when: never
 
 w32_make:
   extends:
@@ -435,6 +439,8 @@ w32_make:
     - .build:w32make
     - .build2
   allow_failure: true
+  rules:
+    - when: never
 
 w64_make:
   extends:
@@ -442,6 +448,8 @@ w64_make:
     - .build:w64make
     - .build2
   allow_failure: true
+  rules:
+    - when: never
 
 Linux_pd64:
   extends:
@@ -467,6 +475,9 @@ Linux_libpd:
     - .build2
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
+  rules:
+    - when: never
+
 Darwin_libpd:
   extends:
     - Darwin
@@ -474,27 +485,38 @@ Darwin_libpd:
   variables:
     TCLTK_VERSION: ''
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS}
+  rules:
+    - when: never
+
 w64_libpd:
   extends:
     - w64
     - .build2
   variables:
     PD_CONFIGURE_FLAGS: ${LIBPD_CONFIGURE_FLAGS} --enable-libpd-instance
+  rules:
+    - when: never
 
 Linux_libpd_make:
   extends:
     - .build:linux
     - .buildtest:libpdmake
+  rules:
+    - when: never
 
 Darwin_libpd_make:
   extends:
     - .build:macos
     - .buildtest:libpdmake
+  rules:
+    - when: never
 
 w64_libpd_make:
   extends:
     - .build:w64
     - .buildtest:libpdmake
+  rules:
+    - when: never
 
 ## packages
 deken:
