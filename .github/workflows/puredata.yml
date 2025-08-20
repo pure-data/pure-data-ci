@@ -94,8 +94,8 @@ jobs:
         run: make
       - name: Install
         run: |
-          make app || true
-          find . -iname "*.exe" -exec file {} + || true
+          make app VERSION="${{ steps.ghd.outputs.describe }}"
+          find Pd*-* -iname "*.exe" -exec file {} +
       - name: DLL dependencies
         if: ${{ false }}
         run: |
