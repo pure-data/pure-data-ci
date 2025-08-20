@@ -62,6 +62,8 @@ jobs:
           path-type: inherit
           install: >-
             mingw-w64-x86_64-ntldd-git
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Install utils
         run: |
            pacman.exe -S --noconfirm --noprogressbar wget unzip
