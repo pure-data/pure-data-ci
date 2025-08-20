@@ -92,41 +92,39 @@ jobs:
           name: windows-float${{ matrix.float }}
           path: Pd*-*
 
-#  macOS-amd64:
-#    runs-on: macos-latest
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#         float: [32]
-#    env:
-#      FLOATSIZE: ${{ matrix.float }}
-#      TCLTK: 8.6.12
-#    steps:
-#      - name: Install dependencies
-#        run: |
-#          brew install jack automake autoconf gettext libtool
-#      - name: Checkout code
-#        uses: actions/checkout@v2
-#        with:
-#          submodules: true
+  Darwin:
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+         float: [32]
+    env:
+      FLOATSIZE: ${{ matrix.float }}
+      TCLTK: 8.6.12
+    steps:
+      - name: Install dependencies
+        run: |
+          brew install jack automake autoconf gettext libtool
+      - name: Checkout code
+        uses: actions/checkout@v2
 #      - name: Build Tcl/Tk
 #        if: ${{ env.TCLTK != '' }}
 #        run: |
 #          mac/tcltk-wish.sh "${TCLTK}"
-#      - name: Configure
-#        run: |
-#          ./autogen.sh
-#          ./configure --disable-jack-framework --enable-jack CPPFLAGS="-DPD_FLOATSIZE=${FLOATSIZE}"
-#      - name: Build
-#        run: make
-#      - name: Install
-#        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} amd64-float${FLOATSIZE}
-#      - name: Upload artifacts
-#        if: ${{ false }}
-#        uses: actions/upload-artifact@v4
-#        with:
-#          name: macos-amd64-float${{ matrix.float }}
-#          path: Pd*-float*
+      - name: Configure
+        run: |
+          ./autogen.sh
+          ./configure --disable-jack-framework --enable-jack --with-floatsize="${FLOATSIZE}"
+      - name: Build
+        run: make
+      - name: Install
+        run: make app
+      - name: Upload artifacts
+        if: ${{ false }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: darwin-float${{ matrix.float }}
+          path: Pd*.app
 
 ################################################################
 ## basic builds
