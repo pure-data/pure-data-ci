@@ -375,6 +375,20 @@ default:
     - *script_notarize_macos
     - *script_staple_macos
 
+
+# double precision builds
+.double:
+  extends:
+    - .build2
+  variables:
+    PD_FLOATSIZE: 64
+  rules:
+    # only run the job if the PD_FLOATSIZE is really 64
+    # (and the job is selected)
+    - if: $PD_FLOATSIZE == "64" && $IEM_CI_JOBS == ""
+    - if: $PD_FLOATSIZE == "64" && $CI_JOB_NAME =~ $IEM_CI_JOBS
+    - when: never
+
 ###################################################
 ### the actual jobs: (linux,macos,windows)*(release,snapshot)
 
@@ -428,19 +442,6 @@ w64_make:
     - .build:w64make
     - .build2
   allow_failure: true
-
-# double precision builds
-.double:
-  extends:
-    - .build2
-  variables:
-    PD_FLOATSIZE: 64
-  rules:
-    # only run the job if the PD_FLOATSIZE is really 64
-    # (and the job is selected)
-    - if: $PD_FLOATSIZE == "64" && $IEM_CI_JOBS == ""
-    - if: $PD_FLOATSIZE == "64" && $CI_JOB_NAME =~ $IEM_CI_JOBS
-    - when: never
 
 Linux_pd64:
   extends:
