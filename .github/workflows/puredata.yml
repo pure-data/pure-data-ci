@@ -67,7 +67,7 @@ jobs:
             automake:
             libtool:p
             ntldd:p
-          # path-type: inherit
+          path-type: inherit
       - name: Checkout code
         uses: actions/checkout@v2
       - name: ASIOSDK
