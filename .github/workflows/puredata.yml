@@ -43,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        float: [32]
+        float: [32, 64]
         msystem:
           - mingw32
           - mingw64
@@ -94,6 +94,8 @@ jobs:
       - name: Install
         run: |
           make app VERSION="${{ steps.ghd.outputs.describe }}"
+          for app in pd-*/tcl/pd-gui.tcl; do test -e "${app}" || continue; app="${app%%/*}"; mv "${app}" "pd${FLOATSIZE}-${app#pd-}"; done
+
           find pd*-* -iname "*.exe" -exec file {} +
       - name: DLL dependencies
         run: |
