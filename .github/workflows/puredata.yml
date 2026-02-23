@@ -113,7 +113,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        float: [32]
+        float: [32, 64]
     env:
       FLOATSIZE: ${{ matrix.float }}
       TCLTK: 8.6.12
@@ -137,7 +137,9 @@ jobs:
       - name: Build
         run: make
       - name: Install
-        run: mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" "${{ steps.ghd.outputs.describe }}"
+        run: |
+          mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" "${{ steps.ghd.outputs.describe }}"
+          for app in Pd-*.app; do mv "${app}" "Pd${FLOATSIZE}-${app#Pd-}"; done
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
