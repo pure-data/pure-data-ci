@@ -13,6 +13,8 @@ jobs:
       fail-fast: false
       matrix:
         float: [32, 64]
+        experimental: [false]
+    continue-on-error: ${{ matrix.experimental }}
     env:
       FLOATSIZE: ${{ matrix.float }}
     steps:
@@ -50,9 +52,13 @@ jobs:
           # - ucrt64
           # - clang64
           - clangarm64
+        experimental:
+          - false
         include:
           - msystem: clangarm64
             runner: windows-11-arm
+            experimental: true
+    continue-on-error: ${{ matrix.experimental }}
     runs-on: ${{ matrix.runner || 'windows-latest' }}
     defaults:
       run:
@@ -114,6 +120,8 @@ jobs:
       fail-fast: false
       matrix:
         float: [32, 64]
+        experimental: [false]
+    continue-on-error: ${{ matrix.experimental }}
     env:
       FLOATSIZE: ${{ matrix.float }}
       TCLTK: 8.6.12
