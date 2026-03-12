@@ -51,10 +51,13 @@ jobs:
           - mingw64
           # - ucrt64
           # - clang64
-          - clangarm64
         include:
           - msystem: clangarm64
             runner: windows-11-arm
+            float: 32
+          - msystem: clangarm64
+            runner: windows-11-arm
+            float: 64
     continue-on-error: ${{ contains(matrix.msystem, 'clangarm64') }}
     runs-on: ${{ matrix.runner || 'windows-latest' }}
     defaults:
