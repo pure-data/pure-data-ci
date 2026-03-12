@@ -52,13 +52,10 @@ jobs:
           # - ucrt64
           # - clang64
           - clangarm64
-        experimental:
-          - false
         include:
           - msystem: clangarm64
             runner: windows-11-arm
-            experimental: true
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ contains(matrix.msystem, 'clangarm64') }}
     runs-on: ${{ matrix.runner || 'windows-latest' }}
     defaults:
       run:
