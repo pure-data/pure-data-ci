@@ -93,8 +93,12 @@ default:
     # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
     # install build tools
-    - which automake || brew install automake
-    - which glibtool || brew install libtool
+    - brew list --full-name || true
+    - brew update || true
+    - which automake || brew install automake || true
+    - which -s libtoolize || which -s glibtoolize || brew install libtool || true
+    # try again (in case the GNU ftp servers timed out)
+    - libtoolize --version || glibtoolize --version || brew install libtool || true
     - which gitlab-runner || brew install gitlab-runner
 
     # install JACK
