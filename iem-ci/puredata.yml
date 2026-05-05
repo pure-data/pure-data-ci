@@ -257,21 +257,26 @@ default:
     - when: never
 
 .script:keychain:macos: &script_keychain_macos
+  - test -n "${IEM_CI_TMPDIR}" || IEM_CI_TMPDIR=.git-ci/_build
+  - test -n "${IEM_CI_CERTDIR}" || IEM_CI_CERTDIR="${IEM_CI_TMPDIR}/certs"
+  - rm -rf "${IEM_CI_CERTDIR}"; mkdir -p "${IEM_CI_CERTDIR}"
   - |
     # activate the certificate chain
-  - curl https://developer.apple.com/certificationauthority/AppleWWDRCA.cer >/tmp/AppleWWDRCA.cer
-  - curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer       >/tmp/AppleWWDRCAG3.cer
-  - if test -e "${MACOS_CERTIFICATE_PFX}" && test -n "${MACOS_CERTIFICATE_PWD}"; then cat "${MACOS_CERTIFICATE_PFX}" | base64 -D >/tmp/sign.pfx; fi
-  - test -e /tmp/sign.pfx || exit 77
-  - shasum /tmp/sign.pfx
+  - curl https://developer.apple.com/certificationauthority/AppleWWDRCA.cer >"${IEM_CI_CERTDIR}/AppleWWDRCA.cer"
+  - curl https://www.apple.com/certificateauthority/AppleWWDRCAG3.cer       >"${IEM_CI_CERTDIR}/AppleWWDRCAG3.cer"
+  - curl https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer     >"${IEM_CI_CERTDIR}/DeveloperIDG2CA.cer"
+  - if test -e "${MACOS_CERTIFICATE_PFX}" && test -n "${MACOS_CERTIFICATE_PWD}"; then cat "${MACOS_CERTIFICATE_PFX}" | base64 -D >"${IEM_CI_CERTDIR}/sign.pfx"; fi
+  - test -e "${IEM_CI_CERTDIR}/sign.pfx" || exit 77
+  - shasum "${IEM_CI_CERTDIR}/sign.pfx"
   - keychainpass=${keychainpass:-${CI_BUILD_TOKEN:-secret$(date +%s)}}
   - security create-keychain -p "${keychainpass}" build.keychain
   - security default-keychain -s build.keychain
   - security unlock-keychain -p "${keychainpass}" build.keychain
-  - security import /tmp/AppleWWDRCA.cer   -k build.keychain
-  - security import /tmp/AppleWWDRCAG3.cer -k build.keychain
-  - security import /tmp/sign.pfx -k build.keychain -P "${MACOS_CERTIFICATE_PWD}" -T /usr/bin/codesign
+  - for cert in "${IEM_CI_CERTDIR}"/*.cer; do test -e "${cert}" || continue; security import "${cert}" -k build.keychain; done
+  - security import "${IEM_CI_CERTDIR}/sign.pfx" -k build.keychain -P "${MACOS_CERTIFICATE_PWD}" -T /usr/bin/codesign
   - security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k "${keychainpass}" build.keychain >/dev/null
+  - rm -rf "${IEM_CI_CERTDIR}"
+
   - security find-identity -v
   - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
 .script:codesign:macos: &script_codesign_macos
