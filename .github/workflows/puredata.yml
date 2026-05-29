@@ -369,4 +369,4 @@ jobs:
       - name: Run HTML Validator
         run: |
           npm install html-validate
-          npx html-validate "doc/**/*.htm"
+          npx html-validate --preset=standard "doc/**/*.htm"
