@@ -354,3 +354,19 @@ jobs:
               -o -path ./portmidi -prune \
               -o -type f -not -iregex '.*\.\(patch\|md\|html\)' \
               -print0 | xargs -0 git diff-index --check ${{github.event.pull_request.base.sha}} --
+
+  check_html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run HTML Validator
+        run: |
+          npm install html-validate
+          npx html-validate "doc/**/*.htm"
