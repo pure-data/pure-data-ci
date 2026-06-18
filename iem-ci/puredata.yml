@@ -581,6 +581,8 @@ w64installer:
     - outdir="."
     - find "${outdir}" -maxdepth 1 -name "*.windows-installer.exe" -delete
   script:
+    - find Pd-*/ -type f -name "*.exe" -exec file {} + || true
+    - find Pd-*/ -type f -name "*.com" -exec file {} + || true
     - msw/build-nsi.sh -o "${outdir}" Pd-*/ "${version}"
     - rm -rf Pd-*/
     - for f in "${outdir}"/*.windows-installer.exe; do [ -e "${f}" ] || continue; of="${f##*/}"; test -z "${installersuffix}" || of="${of%.windows-installer.exe}${installersuffix}.windows-installer.exe"; test "${f}" = "${outdir}/${of}" || mv "${f}" "${of}"; done
