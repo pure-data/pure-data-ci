@@ -146,6 +146,7 @@ default:
 
   script:
     # the actual build
+    - set -o shwordsplit || true
     - ./autogen.sh
     - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
