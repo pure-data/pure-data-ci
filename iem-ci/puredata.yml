@@ -90,6 +90,7 @@ default:
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
+    - set -o shwordsplit || true
     # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
     # install build tools
@@ -379,6 +380,7 @@ default:
     - .image:macos
   stage: deploy
   script:
+    - set -o shwordsplit || true
     - *script_keychain_macos
     - *script_codesign_macos
     - *script_notarizeprepare_macos
