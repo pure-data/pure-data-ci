@@ -64,6 +64,11 @@ default:
   dependencies: []
   needs: []
 
+.script:zsh_compat: &script_zsh_compat
+  - | # zsh fixes
+    set -o shwordsplit || true     # zsh doesn't do wordsplitting by default...
+    set -o nonomatch   || true     # zsh bails out if globbing patterns do not expand
+
 .build:linux: &build_linux
   image: gcc
   stage: build
@@ -90,7 +95,7 @@ default:
     PD_CONFIGURE_FLAGS: '--disable-jack-framework --enable-jack'
   stage: build
   before_script:
-    - set -o shwordsplit || true
+    - *script_zsh_compat
     # Pd version
     - VERSION=$(git describe --tags || echo 0.0)
     # install build tools
@@ -147,7 +152,7 @@ default:
 
   script:
     # the actual build
-    - set -o shwordsplit || true
+    - *script_zsh_compat
     - ./autogen.sh
     - PD_CONFIGURE_FLAGS="${PD_CONFIGURE_FLAGS} --with-floatsize=${PD_FLOATSIZE}"
     - echo "${PD_CONFIGURE_FLAGS}"
@@ -380,7 +385,7 @@ default:
     - .image:macos
   stage: deploy
   script:
-    - set -o shwordsplit || true
+    - *script_zsh_compat
     - *script_keychain_macos
     - *script_codesign_macos
     - *script_notarizeprepare_macos
