@@ -287,6 +287,7 @@ default:
   - security find-identity -v
   - sign_id=$(security find-identity -v | head -1 | awk '{print $2}')
 .script:codesign:macos: &script_codesign_macos
+  - ls
   - |
     # sign the Pd.app
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
@@ -303,6 +304,7 @@ default:
   - codesign ${codesignflags} --deep --strict --options=runtime ${APP}
 
 .script:notarizeprepare:macos: &script_notarizeprepare_macos
+  - ls
   # setup some vars
   - NOTARIZE_TIMEOUT=${NOTARIZE_TIMEOUT:-300}
   - APP=${APP:-$(for d in Pd*.app/; do test ! -d "${d}" || echo ${d%/}; break; done)}
