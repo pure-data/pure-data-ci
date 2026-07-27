@@ -26,7 +26,7 @@ jobs:
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install automake gettext libasound2-dev libjack-dev
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Configure
         run: |
           ./autogen.sh
@@ -36,7 +36,7 @@ jobs:
       - name: Install
         run: make install DESTDIR=$(pwd)
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-float${{ matrix.float }}
           path: Pd*-*
@@ -84,7 +84,7 @@ jobs:
             toolchain:p
             ntldd:p
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: ASIOSDK
         run: |
           wget -q -O asiosdk.zip https://www.steinberg.net/asiosdk
@@ -109,7 +109,7 @@ jobs:
           test -e .git-ci/localdeps.win.sh || (wget -q -O .git-ci/localdeps.win.sh "https://git.iem.at/pd/iem-ci/raw/main/localdeps/localdeps.win.sh" && chmod +x .git-ci/localdeps.win.sh) || true
           if [ -x .git-ci/localdeps.win.sh ]; then find pd*-* -type f "(" -name "*.${pd_extension:-m_*}" -o -name "*.dll" -o -name "*.exe" -o -name "*.com" ")" -print -exec .git-ci/localdeps.win.sh {} + || true; fi
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-${{ matrix.msystem }}-float${{ matrix.float }}
           path: pd*-*
@@ -133,7 +133,7 @@ jobs:
         run: |
           brew install jack automake autoconf gettext libtool
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       # - name: Build Tcl/Tk
       #   if: ${{ env.TCLTK != '' }}
       #   run: |
@@ -149,7 +149,7 @@ jobs:
           mac/osx-app.sh ${TCLTK_VERSION:+--wish Wish-${TCLTK_VERSION}.app} --builddir "$(pwd)" "${{ steps.ghd.outputs.describe }}"
           for app in Pd-*.app; do mv "${app}" "Pd${FLOATSIZE}-${app#Pd-}"; done
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: darwin-float${{ matrix.float }}
           path: Pd*.app
@@ -165,7 +165,7 @@ jobs:
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install automake libasound2-dev gettext
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Configure
         run: |
           ./autogen.sh
@@ -181,7 +181,7 @@ jobs:
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install automake
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Configure
         run: |
           ./autogen.sh
@@ -201,7 +201,7 @@ jobs:
           sudo apt-get update
           sudo apt-get -y --no-install-recommends install libasound2-dev
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Build
         run: |
           make -C src -f makefile.gnu
@@ -213,7 +213,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Build
         run: |
           make -C src -f makefile.mac ARCH="" EXTRAARCH=""
@@ -233,7 +233,7 @@ jobs:
           release: false
           path-type: inherit
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Install utils
         run: |
            pacman.exe -S --noconfirm --noprogressbar wget unzip
@@ -267,7 +267,7 @@ jobs:
 #      arch: ${{ matrix.arch }}
 #    steps:
 #      - name: Checkout code
-#        uses: actions/checkout@v2
+#        uses: actions/checkout@v7
 #      - name: pthreads
 #        run: |
 #          curl -o pthreads.zip ftp://sourceware.org/pub/pthreads-win32/pthreads-w32-2-9-1-release.zip
@@ -290,7 +290,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
       - name: Build
         run: |
           make -C libpd
@@ -309,7 +309,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Find files that are executable but shouldnt be
@@ -324,7 +324,7 @@ jobs:
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Find files that use CRLF line-endings
@@ -338,7 +338,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && ( github.event.action == 'opened' || github.event.action == 'synchronize' ) }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: use 'git diff-index' to check for whitespace errors
@@ -359,7 +359,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Install Node.js
         uses: actions/setup-node@v4
