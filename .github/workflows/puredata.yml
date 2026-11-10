@@ -74,6 +74,7 @@ jobs:
         with:
           msystem: ${{ matrix.msystem }}
           release: true
+          update: true
           cache: false
           pacboy: >-
             wget:
